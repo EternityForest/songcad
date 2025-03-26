@@ -9,6 +9,7 @@ const addSection = () => {
     id: (Date.now() + Math.random()).toString(),
     name: 'Section ' + (project.value.sections.length + 1),
     beats: [],
+    tempo: 120,
   })
 }
 const deleteSection = (section: SongProject['sections'][number]) => {

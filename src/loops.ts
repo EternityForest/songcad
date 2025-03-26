@@ -1,4 +1,6 @@
 import { Voicing, Note as TonalNote } from 'tonal'
+import VoicingDictionary from '@tonaljs/voicing-dictionary'
+
 import type { ConcreteNote } from './song_interface'
 
 /* An abstract note is a description like "the root of the chord, played between C2 and C4"
@@ -24,8 +26,8 @@ export function resolveAbstractNote(
   chord: string,
   instrument: string,
 ): ConcreteNote {
-  const voicing = Voicing.get(chord, note.range || ['C3', 'C5'])
-  const uninverted = Voicing.get(chord, note.range || ['C3', 'C5'])
+  const voicing = Voicing.get(chord, note.range || ['C3', 'C5'], VoicingDictionary.all)
+  const uninverted = Voicing.get(chord, note.range || ['C3', 'C5'], VoicingDictionary.all)
 
   const pitches: number[] = voicing.map((n: string) => {
     const n2 = TonalNote.get(n)

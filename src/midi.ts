@@ -12,9 +12,11 @@ const instruments: { [k: string]: Soundfont } = {
 
 export function playNotes(notes: ConcreteNote[], bpm: number) {
   const stopper = []
-  const startTime = new Date().getTime()
 
+  notes.sort((a, b) => a.start - b.start)
   async function f() {
+    const startTime = new Date().getTime()
+
     for (const note of notes) {
       const noteStartMs = note.start
       const delay = noteStartMs - (new Date().getTime() - startTime)
@@ -24,7 +26,12 @@ export function playNotes(notes: ConcreteNote[], bpm: number) {
           setTimeout(resolve, delay)
         })
       }
-      playNote(note.pitch || 64, note.duration, note.volume, note.instrument)
+      const instrument = instruments[note.instrument]
+
+      instrument.start({
+        note: note.pitch,
+        duration: note.duration / 1000,
+      })
 
       if (stopper.length > 0) {
         break

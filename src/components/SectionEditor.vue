@@ -220,6 +220,8 @@ function sortLoopEvents() {
           class="w-16rem"
         />
 
+        <label>BPM:<input type="number" v-model="selected_section.tempo" /></label>
+
         <button
           @click="
             playNotes(
@@ -309,7 +311,16 @@ function sortLoopEvents() {
                   />
                 </td>
                 <td>
-                  <input type="number" min="1" :max="64" v-model="note.duration" class="w-4rem" />
+                  <div class="flex-row">
+                    <button @click="note.duration = 1">1/{{ selected_beat.divisions }}</button>
+
+                    <button @click="note.duration = 2">2/{{ selected_beat.divisions }}</button>
+                    <button @click="note.duration = 3">3/{{ selected_beat.divisions }}</button>
+                    <button @click="note.duration = selected_beat.divisions">
+                      {{ selected_beat.divisions }}/{{ selected_beat.divisions }}
+                    </button>
+                  </div>
+                  <input type="number" min="1" :max="64" v-model="note.duration" class="w-6rem" />
                 </td>
                 <td>
                   <input
