@@ -66,15 +66,13 @@ export interface SongProject {
   beatRows: number
   loops: {
     [k: string]: {
-      /**
-       * GM Instrument number
-       */
-      instrument?: number
-      data?: {
+      instrument: string
+      length: number
+      data: {
         /**
          * Note number
          */
-        note?: number
+        note: string
         /**
          * Note volume
          */
@@ -82,10 +80,13 @@ export interface SongProject {
         /**
          * Note duration as float whole notes
          */
-        duration?: number
-        [k: string]: unknown
+        duration: number
+        start: number
+
+        /** Range of notes to resolve within */
+        rangeMin: string
+        rangeMax: string
       }[]
-      [k: string]: unknown
     }
   }
   sections: {

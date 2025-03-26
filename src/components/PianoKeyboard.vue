@@ -36,7 +36,7 @@ function setNote(n: number) {
         tabindex="-1"
         :key="i[0]"
         class="noselect w-4rem"
-        :class="{ black: i[0].length == 2, white: i[0].length == 1 }"
+        :class="{ black: i[0].length == 3, white: i[0].length == 2 }"
         @click="setNote(i[1])"
       >
         {{ i[0] }}

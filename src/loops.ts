@@ -1,7 +1,8 @@
 import { Voicing, Note as TonalNote } from 'tonal'
 import VoicingDictionary from '@tonaljs/voicing-dictionary'
 
-import type { ConcreteNote } from './song_interface'
+import type { ConcreteNote, SongProject } from './song_interface'
+import { parse } from 'vue/compiler-sfc'
 
 /* An abstract note is a description like "the root of the chord, played between C2 and C4"
 It exists to specify loop patterns independently of the actual notes,
@@ -49,25 +50,47 @@ export function resolveAbstractNote(
   }
   if (p === 'root') {
     resolvedNote.pitch = uninvertedPitches[0]
-  }
-  if (p === '1st') {
+  } else if (p === '1st') {
+    resolvedNote.pitch = uninvertedPitches[0]
+  } else if (p === '2nd') {
     resolvedNote.pitch = uninvertedPitches[1]
-  }
-  if (p === '2nd') {
+  } else if (p === '3rd') {
     resolvedNote.pitch = uninvertedPitches[2]
-  }
-  if (p === '3rd') {
+  } else if (p === '4th') {
     resolvedNote.pitch = uninvertedPitches[3]
-  }
-  if (p === '4th') {
-    resolvedNote.pitch = uninvertedPitches[4]
   } else if (typeof p === 'number') {
     resolvedNote.pitch = pitches[p]
   } else {
     // Error fallback
-    resolvedNote.pitch = pitches[0]
+    if (pitches[parseInt(p)]) {
+      resolvedNote.pitch = pitches[parseInt(p)]
+    } else {
+      resolvedNote.pitch = pitches[0]
+    }
   }
   return resolvedNote
+}
+
+export function renderConfiguredLoop(
+  loopinfo: SongProject['loops'][string],
+  beatOffset: number,
+): AbstractNote[] {
+  const notes: AbstractNote[] = []
+  const wrapped = beatOffset % loopinfo.length
+
+  for (const note of loopinfo.data) {
+    if (note.start >= wrapped && note.start < wrapped + 1) {
+      notes.push({
+        pitch: note.note,
+        duration: note.duration,
+        volume: note.volume,
+        start: note.start - wrapped + beatOffset,
+        range: [note.rangeMin, note.rangeMax],
+        loopLayer: loopinfo.instrument,
+      })
+    }
+  }
+  return notes
 }
 
 /* Split a list of notes at a split point, splitting individual notes if needed */
@@ -180,7 +203,7 @@ loopLibrary['just-root-piano'] = {
         pitch: 'root',
         duration: 0.97,
         start: beatOffset,
-        range: ['C4', 'G5'],
+        range: ['C2', 'G3'],
       },
     ]
     return notes

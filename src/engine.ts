@@ -1,7 +1,7 @@
 import { project } from './song_state'
 import type { SongProject, ConcreteNote, LoopEvent } from './song_interface'
 import { playNote } from './midi'
-import { loopLibrary, resolveAbstractNote } from './loops'
+import { loopLibrary, resolveAbstractNote, renderConfiguredLoop } from './loops'
 import type { AbstractNote } from './loops'
 import { Chord, note } from 'tonal'
 /*This function takes a beat index and section index and looks backwards through all
@@ -239,10 +239,22 @@ export function renderSong(
             const loopType = loop.loop.split(':')[0]
             const loopData = loopLibrary[loopType]
             const beats_into_loop = beatCounter - loop.startBeat
-            const notes = loopData.f(beats_into_loop, loop.loop.split(':')[1] || '')
 
+            let notes = []
+
+            // User configured notes are a more basic thing, there's
+            // also code defined loops
+            if (song.loops[loop.loop] != undefined) {
+              notes = renderConfiguredLoop(song.loops[loop.loop], beats_into_loop)
+            } else {
+              notes = loopData.f(beats_into_loop, loop.loop.split(':')[1] || '')
+            }
             for (const note of notes) {
-              const res_note = resolveAbstractNote(note, state.chord, loopData.instrument)
+              const res_note = resolveAbstractNote(
+                note,
+                state.chord,
+                loopData?.instrument || song.loops[loop.loop]?.instrument,
+              )
               res_note.duration *= timePerBeat
 
               //Get the time relative to the current beat, since out input
@@ -327,12 +339,19 @@ function backtrackBeat(section_idx: number, beat_idx: number) {
         for (const loop of beat.loopEvents) {
           if (loop !== undefined && loop.action !== undefined && loop.loop !== undefined) {
             if (loop.action === 'start') {
-              if (loop.loop !== undefined) {
+              if (loop.loop == undefined) {
                 continue
               }
               // Zero fill length is what determines just a normal loop
               if (loop?.fillLength || 0 < 1) {
-                if (!loops.includes(loop.loop)) {
+                let foundLoop = false
+                for (const existingLoop of loops) {
+                  if (existingLoop.loop === loop.loop) {
+                    foundLoop = true
+                    existingLoop.startBeat = beatCounter + loop.position / (beat.divisions || 4)
+                  }
+                }
+                if (!foundLoop) {
                   loops.push({
                     loop: loop.loop,
                     layer: loop.layer || '',

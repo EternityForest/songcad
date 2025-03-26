@@ -29,6 +29,15 @@ const moveSectionDown = (section: SongProject['sections'][number]) => {
   project.value.sections.splice(index, 1)
   project.value.sections.splice(index + 1, 0, section)
 }
+
+const downloadAsJson = () => {
+  const blob = new Blob([JSON.stringify(project.value)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'song.json'
+  a.click()
+}
 </script>
 
 <template>
@@ -36,6 +45,9 @@ const moveSectionDown = (section: SongProject['sections'][number]) => {
     <header>
       <h2>Sections</h2>
     </header>
+    <div class="tool-bar">
+      <button @click="downloadAsJson">Download</button>
+    </div>
     <div id="editor-sections" class="scroll w-16rem">
       <div v-for="section in project.sections" :key="section.id" class="tool-bar">
         <button class="grow" @click="selected_section_idx = project.sections.indexOf(section)">

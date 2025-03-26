@@ -4,6 +4,7 @@ import type { Ref } from 'vue'
 import { project, selected_section, selected_section_idx, setActiveNoteInput } from '../song_state'
 import BeatIcon from './BeatIcon.vue'
 import PianoKeyboard from './PianoKeyboard.vue'
+import ChordInfo from './ChordInfo.vue'
 import { piano, playNotes } from '../midi'
 import { flattenNotes, playNewBeat } from '../engine'
 import { renderSong } from '../engine'
@@ -156,7 +157,7 @@ function getPossibleChords(beat: SongProject['sections'][number]['beats'][number
 
   possibilities.sort((a, b) => a.length - b.length)
   // Only the first 16
-  return possibilities.slice(0, 5)
+  return possibilities.slice(0, 12)
 }
 
 const midi_notes: [number, string][] = []
@@ -301,10 +302,14 @@ function sortLoopEvents() {
             <tbody>
               <tr v-for="(note, index) in selected_melody_data" :key="index">
                 <td>
+                  <button @click="note.position = 0">0</button>
+                  <button @click="note.position = 1">1</button>
+                  <button @click="note.position = 2">2</button>
+
                   <input
                     type="number"
                     v-model="note.position"
-                    class="w-4rem"
+                    class="w-6rem"
                     min="0"
                     @change="sortMelodyNotes()"
                     :max="(selected_beat?.divisions || 1) - 1"
@@ -352,7 +357,7 @@ function sortLoopEvents() {
           <PianoKeyboard></PianoKeyboard>
           <div>
             <h4>Chord Ideas</h4>
-            <div>
+            <div class="flex-row">
               <span class="margin" v-for="i of getPossibleChords(selected_beat)" :key="i">{{
                 i
               }}</span>
@@ -389,6 +394,7 @@ function sortLoopEvents() {
 
                 <td>
                   <input type="text" v-model="cc.chord" class="w-8rem" />
+                  <ChordInfo :chord="cc.chord"></ChordInfo>
                 </td>
 
                 <td>
