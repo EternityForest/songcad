@@ -292,13 +292,13 @@ export function renderSong(
 
               //Get the time relative to the current beat, since out input
               // scale was relative to the loop start
-              res_note.start -= beats_into_loop
+              res_note.start -= beatCounter + divisionFloat
 
               // Millisecond scale and convert to absolute
               res_note.start *= timePerBeat
 
               // Add abs time of the start of this beat
-              res_note.start += beatMsCounter
+              res_note.start += beatMsCounter + divisionFloat * timePerBeat
 
               outputBeat.push(res_note)
             }
