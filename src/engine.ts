@@ -199,13 +199,17 @@ export function renderSong(
         }
         const loopEventsThisDivision = loopEventsByPosition[divisionIndex] || []
 
+        const needRunLoopEvents = []
+
         for (const loopEvent of loopEventsThisDivision) {
           if (loopEvent.action === 'start') {
-            state.loops.push({
+            const x = {
               loop: loopEvent.loop || '',
               layer: loopEvent.layer || '',
               startBeat: beatCounter + divisionIndex / (beat.divisions || 4),
-            })
+            }
+            state.loops.push(x)
+            needRunLoopEvents.push(x)
           } else if (loopEvent.action === 'stop') {
             // Either matching layer and no loop name or matching loop name can remove it
             state.loops = state.loops.filter(
@@ -216,38 +220,64 @@ export function renderSong(
                 ) || !(loop.layer !== loopEvent.layer && loopEvent.loop == ''),
             )
           } else if (loopEvent.action === 'fill') {
-            state.fills[loopEvent.layer || ''] = {
+            const x = {
               loop: loopEvent.loop || '',
               layer: loopEvent.layer || '',
               remaining: loopEvent.fillLength || 0,
               startBeat: beatCounter + divisionIndex / (beat.divisions || 4),
             }
+            state.fills[loopEvent.layer || ''] = x
+            needRunLoopEvents.push(x)
           }
         }
 
         // Decrement all the fills, remove any that are done
         for (const layer in state.fills) {
-          state.fills[layer].remaining -= timePerBeat
-          if (state.fills[layer].remaining <= 0) {
+          state.fills[layer].remaining -= 1
+          if (state.fills[layer].remaining < 0) {
             delete state.fills[layer]
           }
         }
 
         if (divisionIndex == 0 || loopEventsThisDivision.length > 0) {
           // Loop over all the active loops and add any notes from them
-          for (const loop of state.loops) {
+
+          const divisionFloat = divisionIndex / (beat.divisions || 4)
+          if (divisionIndex == 0) {
+            needRunLoopEvents.push(...state.loops)
+            needRunLoopEvents.push(...Object.values(state.fills))
+          }
+
+          // Need to dedupe because the immediate do right now on start and the
+          // do every beat could make a dupe
+          const alreadyRan: { [k: string]: boolean } = {}
+
+          for (const loop of needRunLoopEvents) {
+            if (alreadyRan[loop.loop]) {
+              continue
+            }
+            alreadyRan[loop.loop] = true
             const loopType = loop.loop.split(':')[0]
             const loopData = loopLibrary[loopType]
-            const beats_into_loop = beatCounter - loop.startBeat
+            const beats_into_loop = beatCounter + divisionFloat - loop.startBeat
 
             let notes = []
 
             // User configured notes are a more basic thing, there's
             // also code defined loops
             if (song.loops[loop.loop] != undefined) {
-              notes = renderConfiguredLoop(song.loops[loop.loop], beats_into_loop)
+              notes = renderConfiguredLoop(
+                song.loops[loop.loop],
+                beatCounter + divisionFloat,
+                beats_into_loop,
+              )
             } else {
-              notes = loopData.f(beats_into_loop, loop.loop.split(':')[1] || '')
+              notes = loopData.f(
+                beatCounter + divisionFloat,
+                beats_into_loop,
+
+                loop.loop.split(':')[1] || '',
+              )
             }
             for (const note of notes) {
               const res_note = resolveAbstractNote(
@@ -255,6 +285,9 @@ export function renderSong(
                 state.chord,
                 loopData?.instrument || song.loops[loop.loop]?.instrument,
               )
+
+              const cutoff = findNoteCutOff(res_note, song, section_idx, beat_idx)
+              res_note.duration = cutoff - res_note.start
               res_note.duration *= timePerBeat
 
               //Get the time relative to the current beat, since out input

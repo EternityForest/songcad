@@ -68,20 +68,23 @@ export interface SongProject {
     [k: string]: {
       instrument: string
       length: number
+      divisions: number
       data: {
         /**
          * Note number
          */
-        note: string
+        note: number
+        ignoreInversion?: boolean
         /**
          * Note volume
          */
         volume?: number
         /**
-         * Note duration as float whole notes
+         * Note duration as divisions
          */
         duration: number
         start: number
+        octave?: number
 
         /** Range of notes to resolve within */
         rangeMin: string

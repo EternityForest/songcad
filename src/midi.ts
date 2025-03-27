@@ -3,7 +3,7 @@ import type { ConcreteNote } from './song_interface'
 
 const context = new AudioContext()
 const piano = new Soundfont(context, { instrument: 'acoustic_grand_piano' })
-const flute = new Soundfont(context, { instrument: 'flute' })
+const flute = new Soundfont(context, { instrument: 'marimba' })
 
 const instruments: { [k: string]: Soundfont } = {
   piano: piano,

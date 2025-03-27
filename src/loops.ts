@@ -1,4 +1,4 @@
-import { Voicing, Note as TonalNote } from 'tonal'
+import { Voicing, Note as TonalNote, Chord } from 'tonal'
 import VoicingDictionary from '@tonaljs/voicing-dictionary'
 
 import type { ConcreteNote, SongProject } from './song_interface'
@@ -11,7 +11,7 @@ so we can separate chord logic from loop pattern logic
 export interface AbstractNote {
   // If string, can be root, 1st, 2nd, 3rd, 4th to refer to the non inverted chord notes
   // or a number to index into the inversion.
-  pitch: string | number
+  pitch: number
   duration: number
   volume?: number
   start: number
@@ -19,54 +19,65 @@ export interface AbstractNote {
   range?: string[]
   loopLayer?: string
   loopName?: string
+  octave?: number
+  ignoreInversion?: boolean
 }
 
+function getVoicing(chord: string, range: string, inversion: number) {
+  const neededNotes = Chord.get(chord).notes
+  const startingNote = neededNotes[inversion]
+  const notes: number[] = []
+
+  const start = TonalNote.midi(TonalNote.get(range) || 0) || 16
+
+  let foundStart = false
+  for (let i = start; i < start + 48; i++) {
+    const pitchClass = TonalNote.get(TonalNote.fromMidi(i)).pc
+    if (pitchClass === startingNote) {
+      foundStart = true
+    }
+
+    if (foundStart) {
+      if (neededNotes.includes(pitchClass)) {
+        notes.push(i)
+      }
+    }
+  }
+  return notes
+}
 /*Given an abstract note and a chord, resolve it to a concrete note*/
 export function resolveAbstractNote(
   note: AbstractNote,
   chord: string,
   instrument: string,
 ): ConcreteNote {
-  const voicing = Voicing.get(chord, note.range || ['C3', 'C5'], VoicingDictionary.all)
-  const uninverted = Voicing.get(chord, note.range || ['C3', 'C5'], VoicingDictionary.all)
+  let voicing: number[] = []
 
-  const pitches: number[] = voicing.map((n: string) => {
-    const n2 = TonalNote.get(n)
-    return TonalNote.midi(n2) || 64
-  })
+  if (note.ignoreInversion) {
+    voicing = getVoicing(chord, note?.range?.[0] || 'C3', 0)
+  } else {
+    voicing = getVoicing(chord, note?.range?.[0] || 'C3', 0)
+  }
+  // Make four note patterns work anyway
+  if (voicing.length === 2) {
+    voicing.push(voicing[1])
+  }
+  if (voicing.length === 3) {
+    voicing.push(voicing[0] + 12)
+  }
 
-  const uninvertedPitches: number[] = uninverted.map((n: string) => {
-    const n2 = TonalNote.get(n)
-    return TonalNote.midi(n2) || 64
-  })
+  const p = voicing[note.pitch]
 
-  const p = note.pitch
   const resolvedNote: ConcreteNote = {
-    pitch: 0,
+    pitch: p,
     instrument: instrument,
     duration: note.duration,
     volume: note.volume || 1,
     start: note.start,
   }
-  if (p === 'root') {
-    resolvedNote.pitch = uninvertedPitches[0]
-  } else if (p === '1st') {
-    resolvedNote.pitch = uninvertedPitches[0]
-  } else if (p === '2nd') {
-    resolvedNote.pitch = uninvertedPitches[1]
-  } else if (p === '3rd') {
-    resolvedNote.pitch = uninvertedPitches[2]
-  } else if (p === '4th') {
-    resolvedNote.pitch = uninvertedPitches[3]
-  } else if (typeof p === 'number') {
-    resolvedNote.pitch = pitches[p]
-  } else {
-    // Error fallback
-    if (pitches[parseInt(p)]) {
-      resolvedNote.pitch = pitches[parseInt(p)]
-    } else {
-      resolvedNote.pitch = pitches[0]
-    }
+
+  if (note.octave !== undefined) {
+    resolvedNote.pitch += note.octave * 12
   }
   return resolvedNote
 }
@@ -74,18 +85,26 @@ export function resolveAbstractNote(
 export function renderConfiguredLoop(
   loopinfo: SongProject['loops'][string],
   beatOffset: number,
+  beatPosition: number,
 ): AbstractNote[] {
   const notes: AbstractNote[] = []
   const wrapped = beatOffset % loopinfo.length
 
   for (const note of loopinfo.data) {
-    if (note.start >= wrapped && note.start < wrapped + 1) {
+    const noteStart = note.start / loopinfo.divisions
+    const noteLength = note.duration / loopinfo.divisions
+
+    if (noteStart >= wrapped && noteStart < wrapped + 1) {
       notes.push({
         pitch: note.note,
-        duration: note.duration,
+        duration: noteLength,
         volume: note.volume,
-        start: note.start - wrapped + beatOffset,
-        range: [note.rangeMin, note.rangeMax],
+        start: noteStart - wrapped + beatOffset,
+        range: [
+          note.rangeMin,
+          TonalNote.fromMidi((TonalNote.midi(TonalNote.get(note.rangeMin) || 'C3') || 0) + 12 + 10),
+        ],
+        octave: note.octave,
         loopLayer: loopinfo.instrument,
       })
     }
@@ -128,8 +147,13 @@ export function splitAbstractNotes(notes: AbstractNote[], splitPoint: number): A
   return [before, after]
 }
 
+/**
+ * Beatoffset is the exact position to start rendering at
+ * Beatposition is how far into the the loop we are since loops don't have to
+ * start on beats
+ */
 export interface loopFunction {
-  (beatOffset: number, args: string): AbstractNote[]
+  (beatOffset: number, beatPosition: number, args: string): AbstractNote[]
 }
 
 export interface LoopData {
@@ -143,48 +167,50 @@ export const loopLibrary: { [k: string]: LoopData } = {}
 loopLibrary['whole-note-block'] = {
   instrument: 'piano',
   defaultLayer: 'piano',
-  f: (beatOffset: number, args: string) => {
-    if (beatOffset - Math.floor(beatOffset) > 0.0001) {
+  f: (beatOffset: number, beatPosition: number, args: string) => {
+    if (beatPosition - Math.floor(beatPosition) > 0.001) {
       return []
     }
     const notes: AbstractNote[] = [
       {
-        pitch: 'root',
+        pitch: 0,
         duration: 1,
         start: beatOffset,
         range: ['C2', 'C3'],
       },
       {
-        pitch: 'root',
+        pitch: 1,
         duration: 1,
         start: beatOffset,
-        range: ['C3', 'C4'],
+        range: ['C2', 'C4'],
+        octave: 1,
       },
       {
-        pitch: 'root',
+        pitch: 0,
         duration: 1,
         start: beatOffset,
-        range: ['C4', 'G5'],
+        range: ['C3', 'G5'],
       },
       {
         pitch: 1,
         duration: 1,
         start: beatOffset,
-        range: ['C4', 'G5'],
+        range: ['C3', 'G5'],
       },
       {
         pitch: 2,
         duration: 1,
         volume: 1,
         start: beatOffset,
-        range: ['C4', 'G5'],
+        range: ['C3', 'G5'],
       },
       {
-        pitch: 2,
+        pitch: 3,
         duration: 1,
         volume: 1,
         start: beatOffset,
-        range: ['C4', 'G5'],
+        range: ['C3', 'G5'],
+        octave: 1,
       },
     ]
     return notes
@@ -194,13 +220,13 @@ loopLibrary['whole-note-block'] = {
 loopLibrary['just-root-piano'] = {
   instrument: 'piano',
   defaultLayer: 'piano',
-  f: (beatOffset: number, args: string) => {
+  f: (beatOffset: number, beatPosition: number, args: string) => {
     if (beatOffset - Math.floor(beatOffset) > 0.0001) {
       return []
     }
     const notes: AbstractNote[] = [
       {
-        pitch: 'root',
+        pitch: 0,
         duration: 0.97,
         start: beatOffset,
         range: ['C2', 'G3'],

@@ -41,6 +41,7 @@ const addPattern = () => {
       instrument: 'piano',
       data: [],
       length: 2,
+      divisions: 4,
     }
     selectedPatternName.value = name
   }
@@ -48,13 +49,27 @@ const addPattern = () => {
 
 function addNote() {
   if (!selectedPattern.value) return
+
+  const lastNote = selectedPattern.value.data[selectedPattern.value.data.length - 1]
+  let lastNoteEnd = 0
+  if (lastNote) {
+    lastNoteEnd = lastNote.start + lastNote.duration
+  }
+
   selectedPattern.value.data.push({
-    start: 0,
+    start: lastNoteEnd,
     duration: 1,
-    note: 'root',
-    rangeMax: 'A4',
-    rangeMin: 'A6',
+    note: 1,
+    ignoreInversion: false,
+    rangeMin: 'A4',
+    rangeMax: 'A6',
+    octave: 0,
   })
+}
+
+function deleteNote(index: number) {
+  if (!selectedPattern.value) return
+  selectedPattern.value.data.splice(index, 1)
 }
 
 const sortNotes = () => {
@@ -93,14 +108,32 @@ const sortNotes = () => {
           <button class="nogrow" @click="deletePattern(selectedPatternName)">🗑</button>
         </div>
 
+        <div class="stacked-form">
+          <label
+            >Instrument
+            <select v-model="selectedPattern.instrument">
+              <option value="piano">Piano</option>
+              <option value="flue">Flute</option>
+            </select>
+          </label>
+          <label
+            >Length
+            <input type="number" v-model="selectedPattern.length" class="w-4rem" />
+          </label>
+          <label
+            >Divisions Per Beat
+            <input type="number" v-model="selectedPattern.divisions" />
+          </label>
+        </div>
         <table border="1">
           <thead>
             <tr>
-              <th>Position(Whole Notes)</th>
+              <th>Position</th>
               <th>Duration</th>
               <th>Pitch</th>
               <th>Range Start</th>
-              <th>Range End</th>
+              <th>Octave Offset</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -109,7 +142,7 @@ const sortNotes = () => {
                 <input
                   type="number"
                   v-model="note.start"
-                  class="w-6rem"
+                  class="w-4rem"
                   min="0"
                   @change="sortNotes()"
                   max="128"
@@ -120,48 +153,25 @@ const sortNotes = () => {
               </td>
 
               <td>
-                <select v-model="note.note" class="w-4rem">
-                  <option value="root">Root(ignore inversion)</option>
-                  <option value="1st">1st(ignore inversion)</option>
-                  <option value="2nd">2nd(ignore inversion)</option>
-                  <option value="3rd">3rd(ignore inversion)</option>
-                  <option value="4th">4th(ignore inversion)</option>
-                  <option value="1">1st(with inversion)</option>
-                  <option value="2">2st(with inversion)</option>
-                  <option value="3">3st(with inversion)</option>
-                  <option value="4">4st(with inversion)</option>
-                </select>
+                <input v-model="note.note" class="w-8rem" />
+                <input type="checkbox" v-model="note.ignoreInversion" />
               </td>
 
               <td>
                 <select v-model="note.rangeMin" class="w-4rem">
                   <option value="A2">A2</option>
-                  <option value="G2">G2</option>
-                  <option value="A3">F3</option>
-                  <option value="G3">G3</option>
+                  <option value="A3">A3</option>
                   <option value="A4">A4</option>
-                  <option value="G4">G4</option>
                   <option value="A5">A5</option>
-                  <option value="G5">G5</option>
                   <option value="A6">A6</option>
-                  <option value="G6">G6</option>
                   <option value="A7">A7</option>
                 </select>
               </td>
               <td>
-                <select v-model="note.rangeMax" class="w-4rem">
-                  <option value="A2">A2</option>
-                  <option value="G2">G2</option>
-                  <option value="A3">F3</option>
-                  <option value="G3">G3</option>
-                  <option value="A4">A4</option>
-                  <option value="G4">G4</option>
-                  <option value="A5">A5</option>
-                  <option value="G5">G5</option>
-                  <option value="A6">A6</option>
-                  <option value="G6">G6</option>
-                  <option value="A7">A7</option>
-                </select>
+                <input type="number" v-model="note.octave" class="w-4rem" min="-3" max="3" />
+              </td>
+              <td>
+                <button @click="deleteNote(index)">🗑</button>
               </td>
             </tr>
           </tbody>

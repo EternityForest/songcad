@@ -124,11 +124,21 @@ function addMelodyNote() {
   if (!selected_beat.value.melody[selected_melody_column.value]) {
     selected_beat.value.melody[selected_melody_column.value] = []
   }
+
+  const lastNote =
+    selected_beat.value.melody[selected_melody_column.value][
+      selected_beat.value.melody[selected_melody_column.value].length - 1
+    ]
+  let lastNoteEnd = 0
+  if (lastNote) {
+    lastNoteEnd = (lastNote?.position || 0) + (lastNote?.duration || 0)
+  }
+
   selected_beat.value.melody[selected_melody_column.value].push({
     pitch: 64,
     octave: 4,
     duration: 1,
-    position: 0,
+    position: lastNoteEnd,
   })
 }
 
@@ -305,6 +315,7 @@ function sortLoopEvents() {
                   <button @click="note.position = 0">0</button>
                   <button @click="note.position = 1">1</button>
                   <button @click="note.position = 2">2</button>
+                  <button @click="note.position = 3">3</button>
 
                   <input
                     type="number"
@@ -326,6 +337,11 @@ function sortLoopEvents() {
                     </button>
                   </div>
                   <input type="number" min="1" :max="64" v-model="note.duration" class="w-6rem" />
+                  <div>
+                    Ends: {{ (note?.position || 0) + (note?.duration || 0) }}/{{
+                      selected_beat.divisions
+                    }}
+                  </div>
                 </td>
                 <td>
                   <input
@@ -424,6 +440,7 @@ function sortLoopEvents() {
 
           <datalist id="loops">
             <option v-for="(_loop, key) in loopLibrary" :key="key" :value="key">{{ key }}</option>
+            <option v-for="(_loop, key) in project.loops" :key="key" :value="key"></option>
           </datalist>
 
           <table border="1">

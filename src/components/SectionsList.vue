@@ -38,15 +38,36 @@ const downloadAsJson = () => {
   a.download = 'song.json'
   a.click()
 }
+
+const uploadSong = () => {
+  const el = document.querySelector('#upload-dialog input') as HTMLInputElement
+  if (el.files) {
+    const reader = new FileReader()
+    reader.onload = () => {
+      project.value = JSON.parse(reader.result as string)
+    }
+    reader.readAsText(el.files[0])
+  }
+}
 </script>
 
 <template>
+  <div popover id="upload-dialog" class="window flex-col">
+    <header>Upload Song</header>
+    <div class="tool-bar">
+      <input type="file" accept="application/json" />
+      <button @click="uploadSong()">Upload</button>
+      <button class="nogrow" popoverclose popovertarget="upload-dialog">X</button>
+    </div>
+  </div>
+
   <div id="editor-sidebar" class="flex-col">
     <header>
       <h2>Sections</h2>
     </header>
     <div class="tool-bar">
-      <button @click="downloadAsJson">Download</button>
+      <button @click="downloadAsJson">Save</button>
+      <button popovertarget="upload-dialog">Load</button>
     </div>
     <div id="editor-sections" class="scroll w-16rem">
       <div v-for="section in project.sections" :key="section.id" class="tool-bar">
