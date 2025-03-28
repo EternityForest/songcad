@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { project } from '../song_state'
-
+import { midiToDrumName } from '@/data'
 const selectedPatternName = ref('')
 
 const selectedPattern = computed(() => {
@@ -155,7 +155,15 @@ const sortNotes = () => {
 
               <td>
                 <input v-model="note.note" class="w-8rem" />
-                <input type="checkbox" v-model="note.ignoreInversion" />
+                <input
+                  type="checkbox"
+                  v-model="note.ignoreInversion"
+                  v-if="selectedPattern.instrument != 'drums'"
+                />
+
+                <span v-if="selectedPattern.instrument == 'drums'">
+                  {{ midiToDrumName[note.note] || 'Unknown' }}
+                </span>
               </td>
 
               <td>
