@@ -11,6 +11,9 @@ export interface ConcreteNote {
   volume: number
   start: number
   source_id?: string | number
+
+  beat?: number
+  section?: number
 }
 
 export interface LoopEvent {

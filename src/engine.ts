@@ -157,6 +157,7 @@ export function renderSong(
 
       // No need to compute anything before start point
       if (section_idx < startSection || (section_idx === startSection && beat_idx < startBeat)) {
+        beatCounter++
         continue
       }
       const beat = song.sections[section_idx].beats[beat_idx]
@@ -170,6 +171,8 @@ export function renderSong(
               volume: note.volume || 1,
               start: beatMsCounter + ((note.position || 0) / (beat.divisions || 4)) * timePerBeat,
               instrument: layer,
+              section: section_idx,
+              beat: beat_idx,
             })
           }
         }
@@ -299,6 +302,8 @@ export function renderSong(
 
               // Add abs time of the start of this beat
               res_note.start += beatMsCounter + divisionFloat * timePerBeat
+              res_note.beat = beatCounter
+              res_note.section = section_idx
 
               outputBeat.push(res_note)
             }

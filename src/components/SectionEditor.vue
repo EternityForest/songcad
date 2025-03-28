@@ -58,8 +58,8 @@ function moveBeatDown(index: number) {
   selected_section.value.beats.splice(index, 1)
   selected_section.value.beats.splice(index + 1, 0, beat)
   if (selected_beat_idx.value >= index) {
-    if (selected_beat_idx.value > 0) {
-      selected_beat_idx.value -= 1
+    if (selected_beat_idx.value < selected_section.value.beats.length - 1) {
+      selected_beat_idx.value += 1
     }
   }
 }
@@ -71,8 +71,8 @@ function moveBeatUp(index: number) {
   selected_section.value.beats.splice(index - 1, 0, beat)
 
   if (selected_beat_idx.value >= index) {
-    if (selected_beat_idx.value < selected_section.value.beats.length - 1) {
-      selected_beat_idx.value += 1
+    if (selected_beat_idx.value > 0) {
+      selected_beat_idx.value -= 1
     }
   }
 }
@@ -250,6 +250,7 @@ function sortLoopEvents() {
         v-for="(beat, index) in selected_section.beats"
         :key="index"
         :beat="beat"
+        :section_idx="selected_section_idx"
         :num="index"
         :selected="index == selected_beat_idx"
         @click="selected_beat_idx = index"
@@ -468,7 +469,6 @@ function sortLoopEvents() {
                   <select v-model="loop.action" class="w-4rem">
                     <option value="start">Start</option>
                     <option value="stop">Stop</option>
-                    <option value="fill">Fill</option>
                   </select>
                 </td>
                 <td>

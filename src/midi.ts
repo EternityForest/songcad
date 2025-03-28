@@ -1,10 +1,18 @@
-import { Soundfont } from 'smplr'
+import { Soundfont, getDrumMachineNames } from 'smplr'
+import { CacheStorage } from 'smplr'
+import { ref } from 'vue'
 import type { ConcreteNote } from './song_interface'
 
-const context = new AudioContext()
-const piano = new Soundfont(context, { instrument: 'acoustic_grand_piano' })
-const flute = new Soundfont(context, { instrument: 'marimba' })
+const storage = new CacheStorage()
 
+const context = new AudioContext()
+const piano = new Soundfont(context, { instrument: 'acoustic_grand_piano', storage })
+const flute = new Soundfont(context, { instrument: 'flute', storage })
+
+export const currentBeat = ref(0)
+export const currentSection = ref(0)
+
+console.log(getDrumMachineNames())
 const instruments: { [k: string]: Soundfont } = {
   piano: piano,
   flute: flute,
@@ -28,6 +36,8 @@ export function playNotes(notes: ConcreteNote[], bpm: number) {
       }
       const instrument = instruments[note.instrument]
 
+      currentBeat.value = note.beat || 0
+      currentSection.value = note.section || 0
       instrument.start({
         note: note.pitch,
         duration: note.duration / 1000,

@@ -9,8 +9,6 @@ It exists to specify loop patterns independently of the actual notes,
 so we can separate chord logic from loop pattern logic
 */
 export interface AbstractNote {
-  // If string, can be root, 1st, 2nd, 3rd, 4th to refer to the non inverted chord notes
-  // or a number to index into the inversion.
   pitch: number
   duration: number
   volume?: number
@@ -21,6 +19,9 @@ export interface AbstractNote {
   loopName?: string
   octave?: number
   ignoreInversion?: boolean
+
+  // Don't remap the pitch, it's midi drumming
+  noRemapping?: boolean
 }
 
 function getVoicing(chord: string, range: string, inversion: number) {
@@ -51,23 +52,25 @@ export function resolveAbstractNote(
   chord: string,
   instrument: string,
 ): ConcreteNote {
-  let voicing: number[] = []
+  let p = note.pitch
+  if (!note.noRemapping) {
+    let voicing: number[] = []
 
-  if (note.ignoreInversion) {
-    voicing = getVoicing(chord, note?.range?.[0] || 'C3', 0)
-  } else {
-    voicing = getVoicing(chord, note?.range?.[0] || 'C3', 0)
-  }
-  // Make four note patterns work anyway
-  if (voicing.length === 2) {
-    voicing.push(voicing[1])
-  }
-  if (voicing.length === 3) {
-    voicing.push(voicing[0] + 12)
-  }
+    if (note.ignoreInversion) {
+      voicing = getVoicing(chord, note?.range?.[0] || 'C3', 0)
+    } else {
+      voicing = getVoicing(chord, note?.range?.[0] || 'C3', 0)
+    }
+    // Make four note patterns work anyway
+    if (voicing.length === 2) {
+      voicing.push(voicing[1])
+    }
+    if (voicing.length === 3) {
+      voicing.push(voicing[0] + 12)
+    }
 
-  const p = voicing[note.pitch]
-
+    p = voicing[note.pitch]
+  }
   const resolvedNote: ConcreteNote = {
     pitch: p,
     instrument: instrument,
