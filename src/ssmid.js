@@ -30,7 +30,11 @@ fetch('/Baby_font_for_musescore.sf3').then(async (response) => {
   const synth = new Synthetizer(context.destination, soundFontArrayBuffer) // create the synthetizer
 
   midiPlayer = async (midiFile) => {
-    const seq = new Sequencer([{ binary: midiFile }], synth) // create the sequencer
+    const seq = new Sequencer([{ binary: midiFile }], synth, {
+      skipToFirstNoteOn: false,
+      autoPlay: true,
+      preservePlaybackState: false,
+    }) // create the sequencer
     seq.loop = false
     seq.play()
     runningSeq = seq

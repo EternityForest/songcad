@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { project, selected_section_idx } from '../song_state'
 import type { SongProject } from '../song_interface'
+import { renderSong } from '../engine'
+import { notesToMidi } from '../midi'
+import { flattenNotes } from '../engine'
 
 import '../assets/barrel.css'
 
@@ -49,6 +52,21 @@ const uploadSong = () => {
     reader.readAsText(el.files[0])
   }
 }
+
+function exportMidi() {
+  const rendered = renderSong(project.value, 0, 0)
+  const notes = flattenNotes(rendered)
+  const midi = notesToMidi(notes)
+
+  const blob = new Blob([midi], { type: 'audio/midi' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'song.mid'
+  a.click()
+
+  URL.revokeObjectURL(url)
+}
 </script>
 
 <template>
@@ -68,6 +86,7 @@ const uploadSong = () => {
     <div class="tool-bar">
       <button @click="downloadAsJson">Save</button>
       <button popovertarget="upload-dialog">Load</button>
+      <button @click="exportMidi">Export MIDI</button>
     </div>
     <div id="editor-sections" class="scroll w-16rem">
       <div v-for="section in project.sections" :key="section.id" class="tool-bar">

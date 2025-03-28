@@ -1,4 +1,4 @@
-import { project } from './song_state'
+import { project, selected_section_idx } from './song_state'
 import type { SongProject, ConcreteNote, LoopEvent } from './song_interface'
 import { testNote } from './midi'
 import { loopLibrary, resolveAbstractNote, renderConfiguredLoop } from './loops'
@@ -137,14 +137,21 @@ export function renderSong(
     const outputSection: ConcreteNote[][] = []
     outputSections.push(outputSection)
     const timePerBeat = 60000 / (song.sections[section_idx].tempo || 120)
+
     for (let beat_idx = 0; beat_idx < song.sections[section_idx].beats.length; beat_idx++) {
       const outputBeat: ConcreteNote[] = []
+
+      let offsetTime = 0
+
       outputSection.push(outputBeat)
 
       // No need to compute anything before start point
       if (section_idx < startSection || (section_idx === startSection && beat_idx < startBeat)) {
         beatCounter++
         continue
+      }
+      if (section_idx === startSection && beat_idx === startBeat) {
+        offsetTime = beatMsCounter
       }
       const beat = song.sections[section_idx].beats[beat_idx]
 
@@ -155,7 +162,10 @@ export function renderSong(
               pitch: note.pitch || 64,
               duration: ((note.duration || 0.25) / (beat.divisions || 4)) * timePerBeat,
               volume: note.volume || 1,
-              start: beatMsCounter + ((note.position || 0) / (beat.divisions || 4)) * timePerBeat,
+              start:
+                beatMsCounter +
+                ((note.position || 0) / (beat.divisions || 4)) * timePerBeat -
+                offsetTime,
               instrument: layer,
               section: section_idx,
               beat: beat_idx,
@@ -288,6 +298,8 @@ export function renderSong(
 
               // Add abs time of the start of this beat
               res_note.start += beatMsCounter + divisionFloat * timePerBeat
+
+              res_note.start -= offsetTime
               res_note.beat = beatCounter
               res_note.section = section_idx
 

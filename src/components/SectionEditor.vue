@@ -219,12 +219,17 @@ const stopper = [0]
 async function playFromSelected() {
   const rendered = renderSong(project.value, selected_section_idx.value, selected_beat_idx.value)
   stopper[0] = 0
+  let totalTime = 0
   for (
     let section = selected_section_idx.value;
     section < project.value.sections.length;
     section++
   ) {
-    for (let beat = 0; beat < project.value.sections[section].beats.length; beat++) {
+    for (
+      let beat = selected_beat_idx.value;
+      beat < project.value.sections[section].beats.length;
+      beat++
+    ) {
       currentBeat.value = beat
       currentSection.value = section
       const beatStartTime = Date.now()
@@ -232,6 +237,13 @@ async function playFromSelected() {
       if (stopper[0] == 1) {
         break
       }
+
+      // Realight time because we are playing one section at a time and the abs timestamps
+      // rel to song start don't make sense if you want a section to start right away
+      for (const i of rendered[section][beat]) {
+        i.start -= totalTime
+      }
+      totalTime += beatLen
       playNotes(rendered[section][beat])
       const delay = beatLen - (Date.now() - beatStartTime)
       if (stopper[0] == 1) {

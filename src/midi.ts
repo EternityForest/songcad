@@ -10,7 +10,7 @@ import { Track } from './Midi/Track'
 import { playMidi, stopMidi } from './ssmid.js'
 const instrument_to_gm: { [key: string]: number } = {
   piano: 1,
-  flute: 74,
+  flute: 75,
 }
 
 export const currentBeat = ref(0)
@@ -19,7 +19,7 @@ export const currentSection = ref(0)
 export function stopPlayback() {
   stopMidi()
 }
-function notesToMidi(notes: ConcreteNote[]): ArrayBuffer {
+export function notesToMidi(notes: ConcreteNote[]): ArrayBuffer {
   const midi = new Midi()
 
   const by_track: { [key: string]: Track } = {}
@@ -31,6 +31,7 @@ function notesToMidi(notes: ConcreteNote[]): ArrayBuffer {
         by_track[note.instrument].instrument.number = instrument_to_gm[note.instrument] || 0
         by_track[note.instrument].name = note.instrument.toString()
       }
+
       if (note.instrument === 'drums') {
         by_track[note.instrument].channel = 9
         by_track[note.instrument].name = 'drums'
