@@ -47,7 +47,7 @@ export function notesToMidi(notes: ConcreteNote[]): ArrayBuffer {
         //   time: 0,
         // })
       } else {
-        by_track[note.instrument].channel = Object.keys(instrument_to_gm).length
+        by_track[note.instrument].channel = Object.keys(by_track).length-1
       }
     }
     const track = by_track[note.instrument]

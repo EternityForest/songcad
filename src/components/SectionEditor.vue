@@ -296,7 +296,7 @@ function stop() {
     </div>
 
     <div class="tool-bar">
-      <button @click="addBeatAfterIndex(selected_section.beats.length - 1)">➕</button>
+      <button @click="addBeatAfterIndex(selected_section.beats.length - 1)">➕ Add Beat</button>
       <button @click="moveBeatUp(selected_beat_idx)">⬆️</button>
       <button @click="moveBeatDown(selected_beat_idx)">⬇️</button>
     </div>

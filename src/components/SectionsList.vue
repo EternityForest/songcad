@@ -4,7 +4,7 @@ import type { SongProject } from '../song_interface'
 import { renderSong } from '../engine'
 import { notesToMidi } from '../midi'
 import { flattenNotes } from '../engine'
-
+import { startAudioContext } from '@/ssmid'
 import '../assets/barrel.css'
 
 const addSection = () => {
@@ -87,6 +87,7 @@ function exportMidi() {
       <button @click="downloadAsJson">Save</button>
       <button popovertarget="upload-dialog">Load</button>
       <button @click="exportMidi">Export MIDI</button>
+      <button @click="startAudioContext">Enable Audio</button>
     </div>
     <div id="editor-sections" class="scroll w-16rem">
       <div v-for="section in project.sections" :key="section.id" class="tool-bar">
