@@ -1,0 +1,194 @@
+{
+  "type": "object",
+  "required": ["beatRows", "loops", "sections", "tempo"],
+  "properties": {
+    "beatRows": {
+      "type": "number",
+      "description": "Number of rows in the UI beat grid"
+    },
+    "loops": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "instrument": {
+            "type": "number",
+            "description": "GM Instrument number"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "note": {
+                  "type": "number",
+                  "description": "Note number"
+                },
+                "volume": {
+                  "type": "number",
+                  "description": "Note volume"
+                },
+                "duration": {
+                  "type": "number",
+                  "description": "Note duration as float whole notes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "id", "beats"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Opaque UID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Section name"
+          },
+
+          "tempo": {
+            "type": "number",
+            "description": "BPM"
+          },
+          "beats": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "propagatedChordCache": {
+                  "type": "string",
+                  "description": "The chord that was happening when this beat started"
+                },
+                "propagatedLoopCache": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "loop": {
+                        "type": "string"
+                      },
+                      "layer": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "description": "The loops that were happening when this beat started"
+                },
+                "propagatedFillCache": {
+                  "type": "object",
+                  "description": "Fills are indexed by layer.",
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "loop": {
+                        "type": "string"
+                      },
+                      "layer": {
+                        "type": "string"
+                      },
+                      "beats": {
+                        "type": "number",
+                        "description": "After this one, how many beats till the fill ends"
+                      }
+                    }
+                  }
+                },
+                "divisions": {
+                  "type": "number",
+                  "description": "Divisions for this beat"
+                },
+                "chordChanges": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["chord", "position"],
+                    "properties": {
+                      "chord": {
+                        "type": "string"
+                      },
+                      "inversion": {
+                        "type": "string"
+                      },
+                      "position": {
+                        "type": "number",
+                        "description": "Change duration in divisions"
+                      }
+                    }
+                  }
+                },
+                "melody": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "position": {
+                          "type": "number",
+                          "description": "Position in divisions"
+                        },
+                        "pitch": {
+                          "type": "number",
+                          "description": "Note number"
+                        },
+                        "volume": {
+                          "type": "number",
+                          "description": "Note volume"
+                        },
+                        "duration": {
+                          "type": "number",
+                          "description": "Note duration as float whole notes"
+                        },
+                        "lyric": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "loopEvents": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "loop": {
+                        "type": "string",
+                        "description": "One of the midi loops"
+                      },
+                      "action": {
+                        "type": "string",
+                        "description": "Loop action",
+                        "enum": ["start", "stop"]
+                      },
+                      "fillLength": {
+                        "type": "number",
+                        "description": "How many beats the fill should last.  If 0, it's not a fill"
+                      },
+                      "layer": {
+                        "type": "string",
+                        "description": "Layer name"
+                      },
+
+                      "position": {
+                        "type": "number",
+                        "default": 0,
+                        "description": "On which loop division the event should happen"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
