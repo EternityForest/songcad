@@ -4,9 +4,9 @@ import { CacheStorage } from 'smplr'
 import { ref } from 'vue'
 import type { ConcreteNote } from './song_interface'
 
-//import { Midi, Track } from '@tonejs/midi'
-import { Midi } from './Midi/Midi'
-import { Track } from './Midi/Track'
+import { Midi, Track } from '@tonejs/midi'
+// import { Midi } from './Midi/Midi'
+// import { Track } from './Midi/Track'
 import { playMidi, stopMidi } from './ssmid.js'
 const instrument_to_gm: { [key: string]: number } = {
   piano: 1,
