@@ -20,12 +20,12 @@ export function stopMidi() {
 }
 
 // load the soundfont
-fetch('/Baby_font_for_musescore.sf3').then(async (response) => {
+fetch('./Baby_font_for_musescore.sf3').then(async (response) => {
   // load the soundfont into an array buffer
   const soundFontArrayBuffer = await response.arrayBuffer()
   const context = new AudioContext() // create an audioContext
   await context.audioWorklet.addModule(
-    new URL('/node_modules/spessasynth_lib/' + WORKLET_URL_ABSOLUTE, import.meta.url),
+    new URL('./worklet_processor.min.js', import.meta.url),
   ) // add the worklet
   const synth = new Synthetizer(context.destination, soundFontArrayBuffer) // create the synthetizer
 
