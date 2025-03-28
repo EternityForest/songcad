@@ -18,7 +18,7 @@ export const currentSection = ref(0)
 export function stopPlayback() {
   stopMidi()
 }
-function notesToMidi(notes: ConcreteNote[], bpm: number): ArrayBuffer {
+function notesToMidi(notes: ConcreteNote[]): ArrayBuffer {
   const midi = new Midi()
 
   const by_track: { [key: string]: Track } = {}
@@ -49,8 +49,8 @@ function notesToMidi(notes: ConcreteNote[], bpm: number): ArrayBuffer {
   return buf.buffer
 }
 
-export function playNotes(notes: ConcreteNote[], bpm: number) {
-  const midi = notesToMidi(notes, bpm)
+export function playNotes(notes: ConcreteNote[]) {
+  const midi = notesToMidi(notes)
   playMidi(midi)
 }
 
@@ -62,5 +62,5 @@ export function testNote(pitch: number, instrument: string) {
     volume: 1,
     start: 0,
   }
-  playNotes([note], 120)
+  playNotes([note])
 }

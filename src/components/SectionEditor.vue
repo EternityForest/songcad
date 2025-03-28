@@ -5,8 +5,8 @@ import { project, selected_section, selected_section_idx, setActiveNoteInput } f
 import BeatIcon from './BeatIcon.vue'
 import PianoKeyboard from './PianoKeyboard.vue'
 import ChordInfo from './ChordInfo.vue'
-import { playNotes, testNote, stopPlayback } from '../midi'
-import { flattenNotes, playNewBeat } from '../engine'
+import { playNotes, testNote, stopPlayback, currentBeat, currentSection } from '../midi'
+import { playNewBeat } from '../engine'
 import { renderSong } from '../engine'
 import { backtrackBeat } from '../engine'
 import { loopLibrary } from '../loops'
@@ -214,6 +214,44 @@ function sortLoopEvents() {
   if (!selected_beat.value.loopEvents) return
   selected_beat.value.loopEvents.sort((a, b) => a.position - b.position)
 }
+
+const stopper = [0]
+async function playFromSelected() {
+  const rendered = renderSong(project.value, selected_section_idx.value, selected_beat_idx.value)
+  stopper[0] = 0
+  for (
+    let section = selected_section_idx.value;
+    section < project.value.sections.length;
+    section++
+  ) {
+    for (let beat = 0; beat < project.value.sections[section].beats.length; beat++) {
+      currentBeat.value = beat
+      currentSection.value = section
+      const beatStartTime = Date.now()
+      const beatLen = 60000 / (project.value.sections[section]?.tempo || 120)
+      if (stopper[0] == 1) {
+        break
+      }
+      playNotes(rendered[section][beat])
+      const delay = beatLen - (Date.now() - beatStartTime)
+      if (stopper[0] == 1) {
+        break
+      }
+      if (delay > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay))
+      }
+
+      if (stopper[0] == 1) {
+        break
+      }
+    }
+  }
+}
+
+function stop() {
+  stopper[0] = 1
+  stopPlayback()
+}
 </script>
 
 <template>
@@ -229,17 +267,8 @@ function sortLoopEvents() {
 
         <label>BPM:<input type="number" v-model="selected_section.tempo" /></label>
 
-        <button
-          @click="
-            playNotes(
-              flattenNotes(renderSong(project, selected_section_idx, selected_beat_idx)),
-              120,
-            )
-          "
-        >
-          Play from here
-        </button>
-        <button @click="stopPlayback">Stop</button>
+        <button @click="playFromSelected">Play from here</button>
+        <button @click="stop">Stop</button>
       </tool-bar>
     </header>
     <div id="beats-grid" class="nogrow">

@@ -14,18 +14,15 @@ const noteButtons = computed(() => {
 })
 
 function setNote(n: number) {
-  playNotes(
-    [
-      {
-        pitch: n,
-        duration: 1,
-        instrument: 'piano',
-        volume: 1,
-        start: 0,
-      },
-    ],
-    120,
-  )
+  playNotes([
+    {
+      pitch: n,
+      duration: 1,
+      instrument: 'piano',
+      volume: 1,
+      start: 0,
+    },
+  ])
 
   if (activeNoteInput) {
     if (activeNoteInput[1] instanceof HTMLInputElement) {
