@@ -221,6 +221,7 @@ function sortLoopEvents() {
 </script>
 
 <template>
+  <input type="file" id="midi_input" accept="audio/midi" />
   <div id="section-editor" v-if="selected_section" class="flex-col grow">
     <header>
       <tool-bar>
