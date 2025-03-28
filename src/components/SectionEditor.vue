@@ -5,7 +5,7 @@ import { project, selected_section, selected_section_idx, setActiveNoteInput } f
 import BeatIcon from './BeatIcon.vue'
 import PianoKeyboard from './PianoKeyboard.vue'
 import ChordInfo from './ChordInfo.vue'
-import { piano, playNotes } from '../midi'
+import { playNotes, testNote, stopPlayback } from '../midi'
 import { flattenNotes, playNewBeat } from '../engine'
 import { renderSong } from '../engine'
 import { backtrackBeat } from '../engine'
@@ -186,11 +186,7 @@ function sortMelodyNotes() {
 
 function previewNote(n: Melody[string][number]) {
   const x = async function () {
-    piano.start(n?.pitch || 64)
-    await new Promise((resolve) =>
-      setTimeout(resolve, (n?.duration || 1) * (1000 / (selected_section.value?.tempo || 120))),
-    )
-    piano.stop()
+    testNote(n.pitch || 64, 'piano')
   }
   x()
 }
@@ -221,7 +217,6 @@ function sortLoopEvents() {
 </script>
 
 <template>
-  <input type="file" id="midi_input" accept="audio/midi" />
   <div id="section-editor" v-if="selected_section" class="flex-col grow">
     <header>
       <tool-bar>
@@ -244,6 +239,7 @@ function sortLoopEvents() {
         >
           Play from here
         </button>
+        <button @click="stopPlayback">Stop</button>
       </tool-bar>
     </header>
     <div id="beats-grid" class="nogrow">

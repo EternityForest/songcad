@@ -3,7 +3,7 @@ import { Note } from 'tonal'
 import { noteRangeEditiorStart } from '@/song_state'
 import { computed } from 'vue'
 import { activeNoteInput } from '@/song_state'
-import { playNote } from '@/midi'
+import { playNotes } from '@/midi'
 const noteButtons = computed(() => {
   const x: [string, number][] = []
   for (let i = 0; i < 32; i++) {
@@ -14,7 +14,18 @@ const noteButtons = computed(() => {
 })
 
 function setNote(n: number) {
-  playNote(n, 500, 1, 'piano')
+  playNotes(
+    [
+      {
+        pitch: n,
+        duration: 1,
+        instrument: 'piano',
+        volume: 1,
+        start: 0,
+      },
+    ],
+    120,
+  )
 
   if (activeNoteInput) {
     if (activeNoteInput[1] instanceof HTMLInputElement) {

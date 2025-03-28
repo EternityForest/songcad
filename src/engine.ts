@@ -1,6 +1,6 @@
 import { project } from './song_state'
 import type { SongProject, ConcreteNote, LoopEvent } from './song_interface'
-import { playNote } from './midi'
+import { testNote } from './midi'
 import { loopLibrary, resolveAbstractNote, renderConfiguredLoop } from './loops'
 import type { AbstractNote } from './loops'
 import { Chord, note } from 'tonal'
@@ -8,15 +8,6 @@ import { Chord, note } from 'tonal'
 the chord changes to find the chord at the start of the beat, and any loops that
 were activated at the start of the beat.
 */
-
-function divisionsToMs(
-  section: SongProject['sections'][number],
-  beat: SongProject['sections'][number]['beats'][number],
-  divisions: number,
-) {
-  const ms_per_whole = 60000 / (section?.tempo || 120)
-  return ms_per_whole * (divisions / (beat?.divisions || 4))
-}
 
 async function playNewBeat(section_idx: number, beat_idx: number) {
   const beat = project.value.sections[section_idx].beats[beat_idx]
@@ -27,12 +18,7 @@ async function playNewBeat(section_idx: number, beat_idx: number) {
       for (const layer in beat.melody) {
         for (const note of beat.melody[layer]) {
           if (note.position === i) {
-            playNote(
-              note?.pitch || 0,
-              divisionsToMs(project.value.sections[section_idx], beat, note?.duration || 0),
-              note?.volume || 0,
-              layer,
-            )
+            testNote(note?.pitch || 0, layer)
           }
         }
       }

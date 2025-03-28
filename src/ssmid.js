@@ -7,9 +7,17 @@ import { writeMidi } from 'midi-file'
 
 let midiPlayer = null
 
+export let runningSeq = null
+
 export function playMidi(midi) {
   if (midiPlayer) {
     midiPlayer(midi)
+  }
+}
+
+export function stopMidi() {
+  if (runningSeq) {
+    runningSeq.stop()
   }
 }
 
@@ -25,6 +33,8 @@ fetch('/Baby_font_for_musescore.sf3').then(async (response) => {
 
   midiPlayer = async (midiFile) => {
     const seq = new Sequencer([{ binary: midiFile }], synth) // create the sequencer
+    seq.loop = false
     seq.play()
+    runningSeq = seq
   }
 })
