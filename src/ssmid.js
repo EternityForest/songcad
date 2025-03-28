@@ -3,8 +3,6 @@ import { Sequencer } from 'spessasynth_lib/sequencer/sequencer'
 import { Synthetizer } from 'spessasynth_lib/synthetizer/synthetizer.js'
 import { WORKLET_URL_ABSOLUTE } from 'spessasynth_lib/synthetizer/worklet_url.js'
 
-import { writeMidi } from 'midi-file'
-
 let midiPlayer = null
 
 export let runningSeq = null

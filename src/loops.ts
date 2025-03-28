@@ -53,7 +53,7 @@ export function resolveAbstractNote(
   instrument: string,
 ): ConcreteNote {
   let p = note.pitch
-  if (!note.noRemapping) {
+  if (!(note.noRemapping || instrument === 'drums')) {
     let voicing: number[] = []
 
     if (note.ignoreInversion) {
@@ -70,6 +70,8 @@ export function resolveAbstractNote(
     }
 
     p = voicing[note.pitch]
+  } else {
+    p = parseInt(p.toString())
   }
   const resolvedNote: ConcreteNote = {
     pitch: p,

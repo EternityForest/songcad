@@ -114,6 +114,7 @@ const sortNotes = () => {
             <select v-model="selectedPattern.instrument">
               <option value="piano">Piano</option>
               <option value="flue">Flute</option>
+              <option value="drums">Drums</option>
             </select>
           </label>
           <label
