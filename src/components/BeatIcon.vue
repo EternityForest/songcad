@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { Note as TonalNote } from 'tonal'
 import type { SongProject } from '../song_interface'
 import { computed } from 'vue'
 import { currentSection, currentBeat } from '@/midi'
+
 const props = defineProps<{
   beat: SongProject['sections'][number]['beats'][number]
   num: number
@@ -14,7 +16,8 @@ const lyrics = computed(() => {
   for (const key in props.beat.melody) {
     for (const note of props.beat.melody[key]) {
       if (note.lyric) {
-        l.push(note.position + ' ' + note.lyric)
+        l.push(note.position + ' ' + note.lyric + " " + TonalNote.get(TonalNote.fromMidi(note.pitch || 0)).name
+        )
       }
     }
   }
@@ -33,15 +36,16 @@ import '../assets/barrel.css'
         </button>
       </h2>
     </header>
-    <span v-if="selected">(editing)</span>
-    <div v-for="(lyric, index) in lyrics" :key="index">
-      {{ lyric }}
-    </div>
     <div class="tool-bar" v-if="props.beat?.chordChanges?.length">
       <div v-for="(chord, index) in props.beat.chordChanges" :key="index">
         {{ chord.chord || '' }}
       </div>
     </div>
+    <span v-if="selected">(editing)</span>
+    <div v-for="(lyric, index) in lyrics" :key="index">
+      {{ lyric }} 
+    </div>
+
   </div>
 </template>
 

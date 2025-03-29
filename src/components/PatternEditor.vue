@@ -172,7 +172,7 @@ const sortNotes = () => {
               </td>
 
               <td>
-                <input v-model="note.note" class="w-8rem" />
+                <input type="number" v-model="note.note" class="w-8rem" />
 
 
                 <span v-if="selectedPattern.instrument == 'drums'">
