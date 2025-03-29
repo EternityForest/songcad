@@ -18,20 +18,20 @@ export interface AbstractNote {
   loopLayer?: string
   loopName?: string
   octave?: number
-  ignoreInversion?: boolean
 
+  inversionMode?: string
   // Don't remap the pitch, it's midi drumming
   noRemapping?: boolean
 }
 
-function getVoicing(chord: string, range: string, inversion: number) {
+function getVoicing(chord: string, range: string, inversion: number, lowest:boolean = false): number[] {
   const neededNotes = Chord.get(chord).notes
   const startingNote = neededNotes[inversion]
   const notes: number[] = []
 
   const start = TonalNote.midi(TonalNote.get(range) || 0) || 16
 
-  let foundStart = false
+  let foundStart = lowest
   for (let i = start; i < start + 48; i++) {
     const pitchClass = TonalNote.get(TonalNote.fromMidi(i)).pc
     if (pitchClass === startingNote) {
@@ -56,8 +56,8 @@ export function resolveAbstractNote(
   if (!(note.noRemapping || instrument === 'drums')) {
     let voicing: number[] = []
 
-    if (note.ignoreInversion) {
-      voicing = getVoicing(chord, note?.range?.[0] || 'C3', 0)
+    if (note.inversionMode === 'lowest') {
+      voicing = getVoicing(chord, note?.range?.[0] || 'C3', 0, true)
     } else {
       voicing = getVoicing(chord, note?.range?.[0] || 'C3', 0)
     }
@@ -69,7 +69,7 @@ export function resolveAbstractNote(
       voicing.push(voicing[0] + 12)
     }
 
-    p = voicing[note.pitch]
+    p = voicing[parseInt(note.pitch.toString())]
   } else {
     p = parseInt(p.toString())
   }

@@ -61,9 +61,9 @@ function addNote() {
     duration: 1,
     note: 1,
     volume: 0.6,
-    ignoreInversion: false,
+    inversionMode: 'normal',
     rangeMin: 'A4',
-    rangeMax: 'A6',
+    rangeMax: 'A8',
     octave: 0,
   })
 }
@@ -148,6 +148,7 @@ const sortNotes = () => {
               <th>Position</th>
               <th>Duration</th>
               <th>Pitch</th>
+              <th>Inversion Mode</th>
               <th>Velocity</th>
               <th>Range Start</th>
               <th>Octave Offset</th>
@@ -172,15 +173,17 @@ const sortNotes = () => {
 
               <td>
                 <input v-model="note.note" class="w-8rem" />
-                <input
-                  type="checkbox"
-                  v-model="note.ignoreInversion"
-                  v-if="selectedPattern.instrument != 'drums'"
-                />
+
 
                 <span v-if="selectedPattern.instrument == 'drums'">
                   {{ midiToDrumName[note.note] || 'Unknown' }}
                 </span>
+              </td>
+              <td>
+                <select v-model="note.inversionMode" class="w-8rem">
+                  <option value="normal">Normal</option>
+                  <option value="lowest">Lowest</option>
+                </select>
               </td>
               <td>
                 <input type="number" v-model="note.volume" class="w-4rem" min="0" max="1"
@@ -190,6 +193,7 @@ const sortNotes = () => {
 
               <td>
                 <select v-model="note.rangeMin" class="w-4rem">
+                  <option value="A1">A1</option>
                   <option value="A2">A2</option>
                   <option value="A3">A3</option>
                   <option value="A4">A4</option>

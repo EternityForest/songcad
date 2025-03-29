@@ -3,7 +3,7 @@ import type { SongProject, ConcreteNote, LoopEvent } from './song_interface'
 import { testNote } from './midi'
 import { loopLibrary, resolveAbstractNote, renderConfiguredLoop } from './loops'
 import type { AbstractNote } from './loops'
-import { Chord, note } from 'tonal'
+import { Chord, note, Note as TonalNote } from 'tonal'
 /*This function takes a beat index and section index and looks backwards through all
 the chord changes to find the chord at the start of the beat, and any loops that
 were activated at the start of the beat.
@@ -82,7 +82,12 @@ function findNoteCutOff(
         for (const change of beat.chordChanges) {
           const pos_in_whole_notes = change.position / (beat.divisions || 4) + beatCount
           if (pos_in_whole_notes > inputNote.start && pos_in_whole_notes < inputNoteEnd) {
-            return pos_in_whole_notes
+
+            const notesInNewChord = Chord.get(change.chord).notes
+            const pitchClass = TonalNote.get(TonalNote.fromMidi(inputNote.pitch)).pc
+            if(!notesInNewChord.includes(pitchClass)) {
+                return pos_in_whole_notes
+            }
           }
         }
       }

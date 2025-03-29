@@ -77,7 +77,7 @@ export interface SongProject {
          * Note number
          */
         note: number
-        ignoreInversion?: boolean
+        inversionMode?: string
         /**
          * Note volume
          */
@@ -108,6 +108,7 @@ export interface SongProject {
      * BPM
      */
     tempo?: number
+    beatsPerMeasure?: number
     beats: {
       /**
        * The chord that was happening when this beat started

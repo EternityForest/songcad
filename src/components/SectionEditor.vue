@@ -2,10 +2,11 @@
 import { ref, computed } from 'vue'
 import type { Ref } from 'vue'
 import { project, selected_section, selected_section_idx, setActiveNoteInput } from '../song_state'
+import { flattenNotes } from '../engine'
 import BeatIcon from './BeatIcon.vue'
 import PianoKeyboard from './PianoKeyboard.vue'
 import ChordInfo from './ChordInfo.vue'
-import { playNotes, testNote, stopPlayback, currentBeat, currentSection } from '../midi'
+import { playNotes, testNote, stopPlayback, currentBeat, currentSection} from '../midi'
 import { playNewBeat } from '../engine'
 import { renderSong } from '../engine'
 import { backtrackBeat } from '../engine'
@@ -167,7 +168,7 @@ function getPossibleChords(beat: SongProject['sections'][number]['beats'][number
 
   possibilities.sort((a, b) => a.length - b.length)
   // Only the first 16
-  return possibilities.slice(0, 12)
+  return possibilities.slice(0, 18)
 }
 
 const midi_notes: [number, string][] = []
@@ -260,6 +261,13 @@ async function playFromSelected() {
   }
 }
 
+
+function playHQFromSelected() {
+  const rendered = renderSong(project.value, selected_section_idx.value, selected_beat_idx.value)
+  const notes = flattenNotes(rendered)
+  playNotes(notes)
+}
+
 function stop() {
   stopper[0] = 1
   stopPlayback()
@@ -278,12 +286,14 @@ function stop() {
         />
 
         <label>BPM:<input type="number" v-model="selected_section.tempo" /></label>
-
+        <label>Beats Per Measure:<input type="number" v-model="selected_section.beatsPerMeasure" /></label>
         <button @click="playFromSelected">Play from here</button>
+        <button @click="playHQFromSelected">HQ Play Here</button>
         <button @click="stop">Stop</button>
       </tool-bar>
     </header>
-    <div id="beats-grid" class="nogrow">
+    <div :class="{ 'beats-grid-3': selected_section.beatsPerMeasure == 3, 
+    'beats-grid-4': selected_section.beatsPerMeasure == 4 }" class="nogrow">
       <BeatIcon
         v-for="(beat, index) in selected_section.beats"
         :key="index"
@@ -540,10 +550,18 @@ function stop() {
   </div>
 </template>
 
+/* columns of 3*/
 <style scoped>
-#beats-grid {
+.beats-grid-3 {
   display: grid;
-  grid-template-rows: auto auto;
+  grid-template-rows: 1fr 1fr 1fr;
+  grid-auto-flow: column;
+  width: max-content;
+}
+
+.beats-grid-4 {
+  display: grid;
+  grid-template-rows: 1fr 1fr 1fr 1fr;
   grid-auto-flow: column;
   width: max-content;
 }
