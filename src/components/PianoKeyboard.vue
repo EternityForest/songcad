@@ -17,7 +17,7 @@ function setNote(n: number) {
   playNotes([
     {
       pitch: n,
-      duration: 1,
+      duration: 500,
       instrument: 'piano',
       volume: 1,
       start: 0,

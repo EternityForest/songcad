@@ -126,6 +126,16 @@ const sortNotes = () => {
             <input type="number" v-model="selectedPattern.divisions" />
           </label>
         </div>
+        <div class="help">
+          <p>
+          For non-drum tracks, the pitch of a note represents the Nth note of a chord, 0
+          being the lowest note. Pitches past the last note of a chord repeat in the next octave.
+          Drum pitches are MIDI values: 35: Kick, 44: Hihat, etc.
+          </p>
+          <p>Position is relative to the pattern start, measured in divisions.</p>
+          <p>Range start indicates the start of the range to look for a chord voicing to then
+            choose a note from</p>
+        </div>
         <table border="1">
           <thead>
             <tr>

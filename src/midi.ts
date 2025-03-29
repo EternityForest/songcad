@@ -84,7 +84,7 @@ export function testNote(pitch: number, instrument: string) {
   const note: ConcreteNote = {
     pitch: pitch,
     instrument: instrument,
-    duration: 0.5,
+    duration: 500,
     volume: 1,
     start: 0,
   }
