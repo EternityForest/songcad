@@ -60,6 +60,7 @@ function addNote() {
     start: lastNoteEnd,
     duration: 1,
     note: 1,
+    volume: 0.6,
     ignoreInversion: false,
     rangeMin: 'A4',
     rangeMax: 'A6',
@@ -113,8 +114,13 @@ const sortNotes = () => {
             >Instrument
             <select v-model="selectedPattern.instrument">
               <option value="piano">Piano</option>
-              <option value="flue">Flute</option>
+              <option value="flute">Flute</option>
               <option value="drums">Drums</option>
+              <option value="el-bass">Electric Bass</option>
+              <option value="ac-bass">Acoustic Bass</option>
+              <option value="ac-guitar">Guitar</option>
+              <option value="el-guitar">Electric Guitar</option>
+              <option value="organ">Organ</option>
             </select>
           </label>
           <label
@@ -142,6 +148,7 @@ const sortNotes = () => {
               <th>Position</th>
               <th>Duration</th>
               <th>Pitch</th>
+              <th>Velocity</th>
               <th>Range Start</th>
               <th>Octave Offset</th>
               <th></th>
@@ -174,6 +181,11 @@ const sortNotes = () => {
                 <span v-if="selectedPattern.instrument == 'drums'">
                   {{ midiToDrumName[note.note] || 'Unknown' }}
                 </span>
+              </td>
+              <td>
+                <input type="number" v-model="note.volume" class="w-4rem" min="0" max="1"
+                step="0.1"
+                />
               </td>
 
               <td>

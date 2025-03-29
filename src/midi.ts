@@ -11,6 +11,10 @@ import { playMidi, stopMidi } from './ssmid.js'
 const instrument_to_gm: { [key: string]: number } = {
   piano: 1,
   flute: 75,
+  "el-guitar": 30,
+  "ac-bass": 33,
+  "el-bass": 34,
+  "organ": 20
 }
 
 export const currentBeat = ref(0)

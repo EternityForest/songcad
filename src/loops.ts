@@ -93,7 +93,7 @@ export function renderConfiguredLoop(
   beatPosition: number,
 ): AbstractNote[] {
   const notes: AbstractNote[] = []
-  const wrapped = beatOffset % loopinfo.length
+  const wrapped = beatPosition % loopinfo.length
 
   for (const note of loopinfo.data) {
     const noteStart = note.start / loopinfo.divisions
@@ -104,7 +104,7 @@ export function renderConfiguredLoop(
         pitch: note.note,
         duration: noteLength,
         volume: note.volume,
-        start: noteStart - wrapped + beatOffset,
+        start: (noteStart - wrapped) + beatOffset,
         range: [
           note.rangeMin,
           TonalNote.fromMidi((TonalNote.midi(TonalNote.get(note.rangeMin) || 'C3') || 0) + 12 + 10),
@@ -180,12 +180,15 @@ loopLibrary['whole-note-block'] = {
       {
         pitch: 0,
         duration: 1,
+        volume: 0.6,
         start: beatOffset,
         range: ['C2', 'C3'],
       },
       {
         pitch: 1,
         duration: 1,
+        volume: 0.5,
+
         start: beatOffset,
         range: ['C2', 'C4'],
         octave: 1,
@@ -193,26 +196,31 @@ loopLibrary['whole-note-block'] = {
       {
         pitch: 0,
         duration: 1,
+        volume: 0.5,
+
         start: beatOffset,
         range: ['C3', 'G5'],
       },
       {
         pitch: 1,
         duration: 1,
+        volume: 0.5,
+
         start: beatOffset,
         range: ['C3', 'G5'],
       },
       {
         pitch: 2,
         duration: 1,
-        volume: 1,
+        volume: 0.4,
+
         start: beatOffset,
         range: ['C3', 'G5'],
       },
       {
         pitch: 3,
         duration: 1,
-        volume: 1,
+        volume: 0.4,
         start: beatOffset,
         range: ['C3', 'G5'],
         octave: 1,

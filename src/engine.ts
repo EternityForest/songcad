@@ -201,7 +201,7 @@ export function renderSong(
         const needRunLoopEvents = []
 
         for (const loopEvent of loopEventsThisDivision) {
-          if (loopEvent.action === 'start') {
+          if (loopEvent.action === 'start' && ((loopEvent?.fillLength||0) == 0)) {
             const x = {
               loop: loopEvent.loop || '',
               layer: loopEvent.layer || '',
@@ -214,11 +214,11 @@ export function renderSong(
             state.loops = state.loops.filter(
               (loop) =>
                 !(
-                  loop.loop !== loopEvent.loop &&
-                  (loopEvent.layer == '' || loopEvent.layer == loop.layer)
-                ) || !(loop.layer !== loopEvent.layer && loopEvent.loop == ''),
+                  (loop.loop == loopEvent.loop &&
+                  ((loopEvent.layer||'') == '' || loopEvent.layer == loop.layer))
+                ) && !(loop.layer !== loopEvent.layer && loopEvent.loop == ''),
             )
-          } else if (loopEvent.action === 'fill') {
+          } else if (loopEvent.action === 'fill' || (loopEvent?.fillLength ||0) > 0) {
             const x = {
               loop: loopEvent.loop || '',
               layer: loopEvent.layer || '',

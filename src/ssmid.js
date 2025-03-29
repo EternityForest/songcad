@@ -26,16 +26,19 @@ export function startAudioContext() {
     const soundFontArrayBuffer = await response.arrayBuffer()
     const context = new AudioContext() // create an audioContext
     await context.audioWorklet.addModule("./worklet_processor.min.js") // add the worklet
-    const synth = new Synthetizer(context.destination, soundFontArrayBuffer) // create the synthetizer
+    const synth = new Synthetizer(context.destination, soundFontArrayBuffer,true,false,{
+        
+    }) // create the synthetizer
 
     midiPlayer = async (midiFile) => {
       const seq = new Sequencer([{ binary: midiFile }], synth, {
         skipToFirstNoteOn: false,
         autoPlay: true,
-        preservePlaybackState: false,
+        preservePlaybackState: true,
       }) // create the sequencer
       seq.loop = false
       seq.play()
+
       runningSeq = seq
     }
   })
