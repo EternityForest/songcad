@@ -68,60 +68,60 @@ function getVoicing(
   return notes
 }
 
-function autoGetVoicing(chord: string, range: string, last: number[]): number[] {
-  const candidates = []
-  for (let i = 0; i < 4; i++) {
-    candidates.push(getVoicing(chord, range, i))
-  }
+// function autoGetVoicing(chord: string, range: string, last: number[]): number {
+//   const candidates = []
+//   for (let i = 0; i < 4; i++) {
+//     candidates.push([getVoicing(chord, range, i), i])
+//   }
 
-  function hasParalellFifth(notes: number[], last: number[]) {
-    const foundFifthNotes: number[] = []
+//   function hasParalellFifth(notes: number[], last: number[]) {
+//     const foundFifthNotes: number[] = []
 
-    //Find fifth in notes
-    for (let i = 0; i < notes.length; i++) {
-      for (let j = 0; j < notes.length; j++) {
-        if (Math.abs(notes[i] - notes[j]) === 7) {
-          foundFifthNotes.push(notes[i])
-        }
-      }
-    }
+//     //Find fifth in notes
+//     for (let i = 0; i < notes.length; i++) {
+//       for (let j = 0; j < notes.length; j++) {
+//         if (Math.abs(notes[i] - notes[j]) === 7) {
+//           foundFifthNotes.push(notes[i])
+//         }
+//       }
+//     }
 
-    //Check if fifth is in last
-    for (let i = 0; i < last.length; i++) {
-      for (let j = 0; j < last.length; j++) {
-        if (Math.abs(last[i] - last[j]) === 7) {
-          if (!foundFifthNotes.includes(last[i]) && !foundFifthNotes.includes(last[j])) return 1
-        }
-      }
-    }
-    return 0
-  }
+//     //Check if fifth is in last
+//     for (let i = 0; i < last.length; i++) {
+//       for (let j = 0; j < last.length; j++) {
+//         if (Math.abs(last[i] - last[j]) === 7) {
+//           if (!foundFifthNotes.includes(last[i]) && !foundFifthNotes.includes(last[j])) return 1
+//         }
+//       }
+//     }
+//     return 0
+//   }
 
-  function firstOverlap(notes: number[], last: number[]) {
-    for (let i = 0; i < notes.length; i++) {
-      for (let j = 0; j < last.length; j++) {
-        if (notes[i] === last[j]) return notes[i]
-      }
-    }
-    return 9999
-  }
+//   function firstOverlap(notes: number[], last: number[]) {
+//     for (let i = 0; i < notes.length; i++) {
+//       for (let j = 0; j < last.length; j++) {
+//         if (notes[i] === last[j]) return notes[i]
+//       }
+//     }
+//     return 9999
+//   }
 
-  // sort by goodness. earlier overlaps is better, no parallel fifths is even more important
+//   // sort by goodness. earlier overlaps is better, no parallel fifths is even more important
 
-  candidates.sort((a, b) => {
-    const firstOverlapA = firstOverlap(a, last)
-    const firstOverlapB = firstOverlap(b, last)
-    return firstOverlapA - firstOverlapB
-  })
+//   candidates.sort((a, b) => {
+//     const firstOverlapA = firstOverlap(a[0], last)
+//     const firstOverlapB = firstOverlap(b[0], last)
+//     return firstOverlapA - firstOverlapB
+//   })
 
-  candidates.sort((a, b) => {
-    const hasParalellFifthA = hasParalellFifth(a, last)
-    const hasParalellFifthB = hasParalellFifth(b, last)
-    return hasParalellFifthA - hasParalellFifthB
-  })
+//   candidates.sort((a, b) => {
+//     const hasParalellFifthA = hasParalellFifth(a[0], last)
+//     const hasParalellFifthB = hasParalellFifth(b[0] , last)
+//     return hasParalellFifthA - hasParalellFifthB
+//   })
 
-  return candidates[0]
-}
+//   return candidates[0]
+// }
 /*Given an abstract note and a chord, resolve it to a concrete note*/
 export function resolveAbstractNote(
   note: AbstractNote,
