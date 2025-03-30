@@ -384,7 +384,7 @@ function backtrackBeat(section_idx: number, beat_idx: number) {
                 continue
               }
               // Zero fill length is what determines just a normal loop
-              if (loop?.fillLength || 0 < 1) {
+              if ((loop?.fillLength || 0) < 1) {
                 let foundLoop = false
                 for (const existingLoop of loops) {
                   if (existingLoop.loop === loop.loop) {

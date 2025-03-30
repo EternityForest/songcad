@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { project, selected_section_idx } from '../song_state'
+import { project, selected_section_idx, transposeSong } from '../song_state'
 import type { SongProject } from '../song_interface'
 import { renderSong } from '../engine'
 import { notesToMidi } from '../midi'
@@ -7,6 +7,13 @@ import { flattenNotes } from '../engine'
 import { startAudioContext } from '@/ssmid'
 import '../assets/barrel.css'
 
+
+const transposePrompt = () => {
+ const by= prompt('Transpose by how many semitones?')
+ if (by) {
+  project.value = transposeSong(project.value, parseInt(by))
+ }
+}
 const addSection = () => {
   project.value.sections.push({
     id: (Date.now() + Math.random()).toString(),
@@ -15,6 +22,14 @@ const addSection = () => {
     tempo: 120,
   })
 }
+
+const duplicateSection = (section: number) => {
+  const copy = JSON.parse(JSON.stringify(project.value.sections[section]))
+  copy.id = (Date.now() + Math.random()).toString()
+  copy.name += ' (copy)'
+  project.value.sections.splice(section + 1, 0, copy)
+}
+
 const deleteSection = (section: SongProject['sections'][number]) => {
   project.value.sections.splice(project.value.sections.indexOf(section), 1)
 
@@ -88,6 +103,7 @@ function exportMidi() {
       <button popovertarget="upload-dialog">Load</button>
       <button @click="exportMidi">Export MIDI</button>
       <button @click="startAudioContext">Enable Audio</button>
+      <button @click="transposePrompt">Transpose</button>
     </div>
     <div id="editor-sections" class="scroll w-16rem">
       <div v-for="section in project.sections" :key="section.id" class="tool-bar">
@@ -96,6 +112,7 @@ function exportMidi() {
         </button>
         <button class="nogrow" @click="moveSectionDown(section)">⬇️</button>
         <button class="nogrow" @click="deleteSection(section)">🗑</button>
+        <button class="nogrow" @click="duplicateSection(project.sections.indexOf(section))">📦</button>
       </div>
     </div>
     <footer>
