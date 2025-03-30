@@ -67,6 +67,13 @@ export interface SongProject {
    * Number of rows in the UI beat grid
    */
   beatRows: number
+  melodyTracks?: {
+    [k: string]: {
+      instrument: string
+      volume: number
+    }
+  }
+
   loops: {
     [k: string]: {
       instrument: string
@@ -142,7 +149,7 @@ export interface SongProject {
       divisions?: number
       chordChanges?: {
         chord: string
-        inversion?: string
+        inversion?: number
         /**
          * Change duration in divisions
          */

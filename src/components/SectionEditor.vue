@@ -6,7 +6,7 @@ import { flattenNotes } from '../engine'
 import BeatIcon from './BeatIcon.vue'
 import PianoKeyboard from './PianoKeyboard.vue'
 import ChordInfo from './ChordInfo.vue'
-import { playNotes, testNote, stopPlayback, currentBeat, currentSection} from '../midi'
+import { playNotes, testNote, stopPlayback, currentBeat, currentSection } from '../midi'
 import { playNewBeat } from '../engine'
 import { renderSong } from '../engine'
 import { backtrackBeat } from '../engine'
@@ -110,6 +110,25 @@ function selectMelodyColumn(column: string) {
     selected_beat.value.melody[column] = []
   }
 }
+
+const allMelodyColumns = computed(() => {
+  const cols = []
+  if (project.value.melodyTracks) {
+    for (const col in project.value.melodyTracks) {
+      cols.push(col)
+    }
+  }
+
+  if (selected_beat.value) {
+    if (selected_beat.value.melody) {
+      for (const key in selected_beat.value.melody) {
+        if (cols.includes(key)) continue
+        cols.push(key)
+      }
+    }
+  }
+  return cols
+})
 
 function deleteMelodyNote(index: number) {
   if (!selected_beat.value) return
@@ -261,7 +280,6 @@ async function playFromSelected() {
   }
 }
 
-
 function playHQFromSelected() {
   const rendered = renderSong(project.value, selected_section_idx.value, selected_beat_idx.value)
   const notes = flattenNotes(rendered)
@@ -277,7 +295,7 @@ function stop() {
 <template>
   <div id="section-editor" v-if="selected_section" class="flex-col grow">
     <header>
-      <tool-bar>
+      <div class="tool-bar">
         <input
           type="text"
           v-model="selected_section.name"
@@ -286,14 +304,21 @@ function stop() {
         />
 
         <label>BPM:<input type="number" v-model="selected_section.tempo" /></label>
-        <label>Beats Per Measure:<input type="number" v-model="selected_section.beatsPerMeasure" /></label>
+        <label
+          >Beats Per Measure:<input type="number" v-model="selected_section.beatsPerMeasure"
+        /></label>
         <button @click="playFromSelected">Play from here</button>
         <button @click="playHQFromSelected">HQ Play Here</button>
         <button @click="stop">Stop</button>
-      </tool-bar>
+      </div>
     </header>
-    <div :class="{ 'beats-grid-3': selected_section.beatsPerMeasure == 3, 
-    'beats-grid-4': selected_section.beatsPerMeasure == 4 }" class="nogrow">
+    <div
+      :class="{
+        'beats-grid-3': selected_section.beatsPerMeasure == 3,
+        'beats-grid-4': selected_section.beatsPerMeasure == 4,
+      }"
+      class="nogrow"
+    >
       <BeatIcon
         v-for="(beat, index) in selected_section.beats"
         :key="index"
@@ -341,7 +366,7 @@ function stop() {
           <div class="tool-bar">
             <button
               @click="selectMelodyColumn(i)"
-              v-for="i in melody_columns"
+              v-for="i in allMelodyColumns"
               :key="i"
               :class="{ highlight: selected_melody_column == i }"
             >
@@ -463,7 +488,8 @@ function stop() {
                 </td>
 
                 <td>
-                  <input type="text" v-model="cc.inversion" class="w-4rem" />
+                  <input type="number" min="0" max="4" v-model="cc.inversion" class="w-4rem" />
+                  <span v-if="cc.inversion == 0">Auto</span>
                 </td>
                 <td>
                   <div class="tool-bar">

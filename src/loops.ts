@@ -24,8 +24,29 @@ export interface AbstractNote {
   noRemapping?: boolean
 }
 
-function getVoicing(chord: string, range: string, inversion: number, lowest:boolean = false): number[] {
+function canonicalNote(note: string) {
+  if (note === 'C#') return 'Db'
+  if (note === 'D#') return 'Eb'
+  if (note === 'F#') return 'Gb'
+  if (note === 'G#') return 'Ab'
+  if (note === 'A#') return 'Bb'
+  return note
+}
+
+function getVoicing(
+  chord: string,
+  range: string,
+  inversion: number,
+  lowest: boolean = false,
+): number[] {
+  inversion -= 1
+  inversion = Math.max(inversion, 0)
   const neededNotes = Chord.get(chord).notes
+
+  for (let i = 0; i < neededNotes.length; i++) {
+    neededNotes[i] = canonicalNote(neededNotes[i])
+  }
+
   const startingNote = neededNotes[inversion]
   const notes: number[] = []
 
@@ -33,7 +54,7 @@ function getVoicing(chord: string, range: string, inversion: number, lowest:bool
 
   let foundStart = lowest
   for (let i = start; i < start + 48; i++) {
-    const pitchClass = TonalNote.get(TonalNote.fromMidi(i)).pc
+    const pitchClass = canonicalNote(TonalNote.get(TonalNote.fromMidi(i)).pc)
     if (pitchClass === startingNote) {
       foundStart = true
     }
@@ -46,10 +67,68 @@ function getVoicing(chord: string, range: string, inversion: number, lowest:bool
   }
   return notes
 }
+
+function autoGetVoicing(chord: string, range: string, last: number[]): number[] {
+  const candidates = []
+  for (let i = 0; i < 4; i++) {
+    candidates.push(getVoicing(chord, range, i))
+  }
+
+  function hasParalellFifth(notes: number[], last: number[]) {
+    const foundFifthNotes: number[] = []
+
+    //Find fifth in notes
+    for (let i = 0; i < notes.length; i++) {
+      for (let j = 0; j < notes.length; j++) {
+        if (Math.abs(notes[i] - notes[j]) === 7) {
+          foundFifthNotes.push(notes[i])
+        }
+      }
+    }
+
+    //Check if fifth is in last
+    for (let i = 0; i < last.length; i++) {
+      for (let j = 0; j < last.length; j++) {
+        if (Math.abs(last[i] - last[j]) === 7) {
+          if (!foundFifthNotes.includes(last[i]) && !foundFifthNotes.includes(last[j])) return 1
+        }
+      }
+    }
+    return 0
+  }
+
+  function firstOverlap(notes: number[], last: number[]) {
+    for (let i = 0; i < notes.length; i++) {
+      for (let j = 0; j < last.length; j++) {
+        if (notes[i] === last[j]) return notes[i]
+      }
+    }
+    return 9999
+  }
+
+  // sort by goodness. earlier overlaps is better, no parallel fifths is even more important
+
+  candidates.sort((a, b) => {
+    const firstOverlapA = firstOverlap(a, last)
+    const firstOverlapB = firstOverlap(b, last)
+    return firstOverlapA - firstOverlapB
+  })
+
+  candidates.sort((a, b) => {
+    const hasParalellFifthA = hasParalellFifth(a, last)
+    const hasParalellFifthB = hasParalellFifth(b, last)
+    return hasParalellFifthA - hasParalellFifthB
+  })
+
+  return candidates[0]
+}
 /*Given an abstract note and a chord, resolve it to a concrete note*/
 export function resolveAbstractNote(
   note: AbstractNote,
   chord: string,
+  inversion: number,
+  prevChord: string,
+  prevInversion: number,
   instrument: string,
 ): ConcreteNote {
   let p = note.pitch
@@ -59,7 +138,7 @@ export function resolveAbstractNote(
     if (note.inversionMode === 'lowest') {
       voicing = getVoicing(chord, note?.range?.[0] || 'C3', 0, true)
     } else {
-      voicing = getVoicing(chord, note?.range?.[0] || 'C3', 0)
+      voicing = getVoicing(chord, note?.range?.[0] || 'C3', inversion)
     }
     // Make four note patterns work anyway
     if (voicing.length === 2) {
@@ -104,13 +183,14 @@ export function renderConfiguredLoop(
         pitch: note.note,
         duration: noteLength,
         volume: note.volume,
-        start: (noteStart - wrapped) + beatOffset,
+        start: noteStart - wrapped + beatOffset,
         range: [
           note.rangeMin,
           TonalNote.fromMidi((TonalNote.midi(TonalNote.get(note.rangeMin) || 'C3') || 0) + 12 + 10),
         ],
         octave: note.octave,
         loopLayer: loopinfo.instrument,
+        inversionMode: note.inversionMode,
       })
     }
   }

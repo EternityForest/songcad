@@ -7,12 +7,11 @@ import { flattenNotes } from '../engine'
 import { startAudioContext } from '@/ssmid'
 import '../assets/barrel.css'
 
-
 const transposePrompt = () => {
- const by= prompt('Transpose by how many semitones?')
- if (by) {
-  project.value = transposeSong(project.value, parseInt(by))
- }
+  const by = prompt('Transpose by how many semitones?')
+  if (by) {
+    project.value = transposeSong(project.value, parseInt(by))
+  }
 }
 const addSection = () => {
   project.value.sections.push({
@@ -48,6 +47,16 @@ const moveSectionDown = (section: SongProject['sections'][number]) => {
   project.value.sections.splice(index + 1, 0, section)
 }
 
+const moveSectionUp = (section: SongProject['sections'][number]) => {
+  const index = project.value.sections.indexOf(section)
+
+  if (index == selected_section_idx.value) {
+    selected_section_idx.value = index - 1
+  }
+
+  project.value.sections.splice(index, 1)
+  project.value.sections.splice(index - 1, 0, section)
+}
 const downloadAsJson = () => {
   const blob = new Blob([JSON.stringify(project.value)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
@@ -82,6 +91,22 @@ function exportMidi() {
 
   URL.revokeObjectURL(url)
 }
+
+function addMelodyTrack() {
+  if (project.value.melodyTracks == undefined) {
+    project.value.melodyTracks = {}
+  }
+  const name = prompt('Melody Track Name')
+  if (name) {
+    project.value.melodyTracks[name] = {
+      instrument: 'piano',
+    }
+  }
+}
+
+function removeMelodyTrack(name: string) {
+  delete project.value.melodyTracks[name]
+}
 </script>
 
 <template>
@@ -92,6 +117,42 @@ function exportMidi() {
       <button @click="uploadSong()">Upload</button>
       <button class="nogrow" popoverclose popovertarget="upload-dialog">X</button>
     </div>
+
+    <h2>Melody Channels</h2>
+    <div class="tool-bar">
+      <button @click="addMelodyTrack">Add Section</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Instrument</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(melodyTrack, index) in project.melodyTracks" :key="index">
+          <td>{{ index }}</td>
+          <td>
+            <select v-model="melodyTrack.instrument">
+              <option value="piano">Piano</option>
+              <option value="guitar">Guitar</option>
+              <option value="bass">Bass</option>
+              <option value="violin">Violin</option>
+              <option value="viola">Viola</option>
+              <option value="cello">Cello</option>
+              <option value="clarinet">Clarinet</option>
+              <option value="saxophone">Saxophone</option>
+              <option value="trumpet">Trumpet</option>
+              <option value="trombone">Trombone</option>
+            </select>
+          </td>
+          <td>
+            <button @click="removeMelodyTrack(melodyTrack)">🗑</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <div id="editor-sidebar" class="flex-col">
@@ -100,7 +161,7 @@ function exportMidi() {
     </header>
     <div class="tool-bar">
       <button @click="downloadAsJson">Save</button>
-      <button popovertarget="upload-dialog">Load</button>
+      <button popovertarget="upload-dialog">Settings</button>
       <button @click="exportMidi">Export MIDI</button>
       <button @click="startAudioContext">Enable Audio</button>
       <button @click="transposePrompt">Transpose</button>
@@ -110,9 +171,12 @@ function exportMidi() {
         <button class="grow" @click="selected_section_idx = project.sections.indexOf(section)">
           {{ section.name }}
         </button>
+        <button class="nogrow" @click="moveSectionUp(section)">⬆️</button>
         <button class="nogrow" @click="moveSectionDown(section)">⬇️</button>
         <button class="nogrow" @click="deleteSection(section)">🗑</button>
-        <button class="nogrow" @click="duplicateSection(project.sections.indexOf(section))">📦</button>
+        <button class="nogrow" @click="duplicateSection(project.sections.indexOf(section))">
+          📦
+        </button>
       </div>
     </div>
     <footer>

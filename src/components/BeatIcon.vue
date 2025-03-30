@@ -11,6 +11,23 @@ const props = defineProps<{
   selected: boolean
 }>()
 
+const loopEventIcons = computed(() => {
+  const x = []
+  const loopEvents = props.beat?.loopEvents
+  if(!loopEvents) return
+  for (const i in loopEvents) {
+    const ev = loopEvents[i]
+
+    if (ev.action == 'start') {
+      x.push("➡️")
+    }
+    if(ev.action == 'stop') {
+      x.push("⏹️")
+    }
+  }
+
+  return x
+})
 const lyrics = computed(() => {
   const l = []
   for (const key in props.beat.melody) {
@@ -37,8 +54,13 @@ import '../assets/barrel.css'
       </h2>
     </header>
     <div class="tool-bar" v-if="props.beat?.chordChanges?.length">
-      <div v-for="(chord, index) in props.beat.chordChanges" :key="index">
+      <div v-for="(chord, index) in props.beat.chordChanges" :key="index" class="min-w-2rem">
         {{ chord.chord || '' }}
+      </div>
+    </div>
+    <div  v-if="loopEventIcons?.length">
+      <div v-for="(icon, index) in loopEventIcons" :key="index" class="min-w-2rem">
+        {{ icon }}
       </div>
     </div>
     <span v-if="selected">(editing)</span>

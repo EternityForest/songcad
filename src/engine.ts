@@ -82,11 +82,10 @@ function findNoteCutOff(
         for (const change of beat.chordChanges) {
           const pos_in_whole_notes = change.position / (beat.divisions || 4) + beatCount
           if (pos_in_whole_notes > inputNote.start && pos_in_whole_notes < inputNoteEnd) {
-
             const notesInNewChord = Chord.get(change.chord).notes
             const pitchClass = TonalNote.get(TonalNote.fromMidi(inputNote.pitch)).pc
-            if(!notesInNewChord.includes(pitchClass)) {
-                return pos_in_whole_notes
+            if (!notesInNewChord.includes(pitchClass)) {
+              return pos_in_whole_notes
             }
           }
         }
@@ -179,12 +178,12 @@ export function renderSong(
         }
       }
 
-      const chordChanges: { [k: number]: string } = {}
+      const chordChanges: { [k: number]: [string, number] } = {}
       const loopEventsByPosition: { [k: number]: LoopEvent[] } = {}
 
       if (beat.chordChanges !== undefined) {
         for (const change of beat.chordChanges) {
-          chordChanges[change.position] = change.chord
+          chordChanges[change.position] = [change.chord, change.inversion || 0]
         }
       }
 
@@ -199,14 +198,18 @@ export function renderSong(
 
       for (let divisionIndex = 0; divisionIndex < (beat.divisions || 4); divisionIndex++) {
         if (chordChanges[divisionIndex] !== undefined) {
-          state.chord = chordChanges[divisionIndex]
+          state.prevChord = state.chord
+          state.prevInversion = state.inversion
+
+          state.chord = chordChanges[divisionIndex][0]
+          state.inversion = chordChanges[divisionIndex][1]
         }
         const loopEventsThisDivision = loopEventsByPosition[divisionIndex] || []
 
         const needRunLoopEvents = []
 
         for (const loopEvent of loopEventsThisDivision) {
-          if (loopEvent.action === 'start' && ((loopEvent?.fillLength||0) == 0)) {
+          if (loopEvent.action === 'start' && (loopEvent?.fillLength || 0) == 0) {
             const x = {
               loop: loopEvent.loop || '',
               layer: loopEvent.layer || '',
@@ -219,11 +222,11 @@ export function renderSong(
             state.loops = state.loops.filter(
               (loop) =>
                 !(
-                  (loop.loop == loopEvent.loop &&
-                  ((loopEvent.layer||'') == '' || loopEvent.layer == loop.layer))
+                  loop.loop == loopEvent.loop &&
+                  ((loopEvent.layer || '') == '' || loopEvent.layer == loop.layer)
                 ) && !(loop.layer !== loopEvent.layer && loopEvent.loop == ''),
             )
-          } else if (loopEvent.action === 'fill' || (loopEvent?.fillLength ||0) > 0) {
+          } else if (loopEvent.action === 'fill' || (loopEvent?.fillLength || 0) > 0) {
             const x = {
               loop: loopEvent.loop || '',
               layer: loopEvent.layer || '',
@@ -287,6 +290,9 @@ export function renderSong(
               const res_note = resolveAbstractNote(
                 note,
                 state.chord,
+                parseInt(state.inversion.toString()),
+                state.prevChord,
+                state.prevInversion,
                 loopData?.instrument || song.loops[loop.loop]?.instrument,
               )
 
@@ -303,6 +309,11 @@ export function renderSong(
 
               // Add abs time of the start of this beat
               res_note.start += beatMsCounter + divisionFloat * timePerBeat
+
+              //res_note.start += Math.floor(Math.random() * (timePerBeat/64))
+              //res_note.duration += Math.floor(Math.random() * (timePerBeat/64))
+
+              res_note.volume -= Math.random() * 0.1
 
               res_note.start -= offsetTime
               res_note.beat = beatCounter
@@ -351,7 +362,12 @@ function backtrackBeat(section_idx: number, beat_idx: number) {
       remaining: number
     }
   } = {}
+
+  let prevChord = ''
+  let prevInversion = 0
+
   let chord = ''
+  let inversion = 0
 
   let beatCounter = 0
 
@@ -371,7 +387,11 @@ function backtrackBeat(section_idx: number, beat_idx: number) {
         if (chordChangesCopy !== undefined) {
           chordChangesCopy.sort((a, b) => b?.position - a?.position)
           for (const change of beat.chordChanges) {
+            prevChord = chord
+            prevInversion = inversion
+
             chord = change.chord
+            inversion = change.inversion || 0
           }
         }
       }
@@ -413,6 +433,21 @@ function backtrackBeat(section_idx: number, beat_idx: number) {
                   }
                 }
               }
+            } else if (loop.action === 'stop') {
+              for (let i = loops.length - 1; i >= 0; i--) {
+                if (
+                  loops[i].loop === loop.loop &&
+                  (loops[i].layer === loop.layer || loop.layer === '')
+                ) {
+                  loops.splice(i, 1)
+                } else if (
+                  loop.loop == '' &&
+                  (loop?.layer?.length || 0 > 0) &&
+                  loops[i].layer === loop.layer
+                ) {
+                  loops.splice(i, 1)
+                }
+              }
             }
           }
         }
@@ -422,6 +457,9 @@ function backtrackBeat(section_idx: number, beat_idx: number) {
   }
   return {
     chord: chord,
+    inversion: inversion,
+    prevChord: prevChord,
+    prevInversion: prevInversion,
     loops: loops,
     fills: fills,
   }
