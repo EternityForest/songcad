@@ -84,7 +84,7 @@ function addChordChange() {
   selected_beat.value.chordChanges.push({
     chord: '',
     position: 0,
-    inversion: '',
+    inversion: 0,
   })
 }
 

@@ -62,7 +62,7 @@ const downloadAsJson = () => {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = 'song.json'
+  a.download = (project.value.name || 'song') + '.songcad.json'
   a.click()
 }
 
@@ -100,17 +100,25 @@ function addMelodyTrack() {
   if (name) {
     project.value.melodyTracks[name] = {
       instrument: 'piano',
+      volume: 1,
     }
   }
 }
 
 function removeMelodyTrack(name: string) {
+  if (project.value.melodyTracks == undefined) return
+
   delete project.value.melodyTracks[name]
 }
 </script>
 
 <template>
   <div popover id="upload-dialog" class="window flex-col">
+    <label
+      >Song Name
+      <input v-model="project.name" placeholder="Song Name" />
+    </label>
+
     <header>Upload Song</header>
     <div class="tool-bar">
       <input type="file" accept="application/json" />
@@ -127,11 +135,12 @@ function removeMelodyTrack(name: string) {
         <tr>
           <th>Name</th>
           <th>Instrument</th>
+          <th>Volume</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(melodyTrack, index) in project.melodyTracks" :key="index">
+        <tr v-for="(melodyTrack, index) in project.melodyTracks || {}" :key="index">
           <td>{{ index }}</td>
           <td>
             <select v-model="melodyTrack.instrument">
@@ -148,7 +157,17 @@ function removeMelodyTrack(name: string) {
             </select>
           </td>
           <td>
-            <button @click="removeMelodyTrack(melodyTrack)">🗑</button>
+            <input
+              type="number"
+              v-model="melodyTrack.volume"
+              class="w-4rem"
+              min="0"
+              max="1"
+              step="0.01"
+            />
+          </td>
+          <td>
+            <button @click="removeMelodyTrack(index.toString())">🗑</button>
           </td>
         </tr>
       </tbody>

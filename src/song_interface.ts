@@ -67,6 +67,7 @@ export interface SongProject {
    * Number of rows in the UI beat grid
    */
   beatRows: number
+  name: string
   melodyTracks?: {
     [k: string]: {
       instrument: string
