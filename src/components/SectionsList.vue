@@ -121,7 +121,7 @@ function removeMelodyTrack(name: string) {
 
     <header>Upload Song</header>
     <div class="tool-bar">
-      <input type="file" accept="application/json" id="#upload-song-file" />
+      <input type="file" accept="application/json" id="upload-song-file" />
       <button @click="uploadSong()">Upload</button>
       <button class="nogrow" popoverclose popovertarget="upload-dialog">X</button>
     </div>
