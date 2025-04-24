@@ -67,7 +67,7 @@ const downloadAsJson = () => {
 }
 
 const uploadSong = () => {
-  const el = document.querySelector('#upload-dialog input') as HTMLInputElement
+  const el = document.querySelector('#upload-song-file') as HTMLInputElement
   if (el.files) {
     const reader = new FileReader()
     reader.onload = () => {
@@ -121,7 +121,7 @@ function removeMelodyTrack(name: string) {
 
     <header>Upload Song</header>
     <div class="tool-bar">
-      <input type="file" accept="application/json" />
+      <input type="file" accept="application/json" id="#upload-song-file" />
       <button @click="uploadSong()">Upload</button>
       <button class="nogrow" popoverclose popovertarget="upload-dialog">X</button>
     </div>
