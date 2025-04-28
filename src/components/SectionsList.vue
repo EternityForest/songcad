@@ -30,6 +30,7 @@ const duplicateSection = (section: number) => {
 }
 
 const deleteSection = (section: SongProject['sections'][number]) => {
+  if (!confirm('Are you sure you want to delete this section?')) return
   project.value.sections.splice(project.value.sections.indexOf(section), 1)
 
   if (selected_section_idx.value >= project.value.sections.length) {

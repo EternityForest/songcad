@@ -38,6 +38,7 @@ const selected_beat = computed(() => {
 })
 
 function deleteBeat(index: number) {
+  if (!confirm('Are you sure you want to delete this beat?')) return
   if (!selected_section.value) return
   selected_section.value.beats.splice(index, 1)
   if (selected_beat_idx.value >= selected_section.value.beats.length) {
